@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Viraasat (Next.js + Tailwind v3)
 
-## Getting Started
+This is the `viraasat` Next.js project configured to use Tailwind CSS v3.
 
-First, run the development server:
+## Quick start (Windows PowerShell)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Install dependencies
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+   ```powershell
+   cd "c:\Users\LENOVO\Music\visarat\Viraasat-landing-page\viraasat"
+   npm install
+   ```
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+2. Run the development server
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   ```powershell
+   cd "c:\Users\LENOVO\Music\visarat\Viraasat-landing-page\viraasat"
+   npm run dev
+   ```
 
-## Learn More
+Open `http://localhost:3001` (Next.js may pick an alternative port if 3000 is in use).
 
-To learn more about Next.js, take a look at the following resources:
+## How to verify Tailwind v3 is working
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- The homepage (`src/app/page.js`) includes a "Tailwind v3 Test" card with styled buttons and a gradient background. If those styles appear, Tailwind is working.
+- You can also inspect the compiled CSS in the browser DevTools to see Tailwind utility classes.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Files of interest
 
-## Deploy on Vercel
+- `tailwind.config.js` - Tailwind configuration (content paths, theme)
+- `postcss.config.mjs` - PostCSS config using `tailwindcss` and `autoprefixer`
+- `src/app/globals.css` - Includes `@tailwind base`, `@tailwind components`, `@tailwind utilities`
+- `src/app/page.js` - Demo/test UI using Tailwind classes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Troubleshooting
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- EPERM errors while building: try deleting the `.next` directory and re-running `npm run dev`.
+  ```powershell
+  Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue
+  ```
+- If Next.js infers the wrong workspace root (multiple lockfiles warning), set `outputFileTracingRoot` in `next.config.mjs` or remove the extra lockfile.
+- If Tailwind classes aren't applied, ensure `globals.css` is imported in your root layout and that `tailwind.config.js` `content` paths include `src/app`.
+
+## Next steps
+
+- Add components under `src/components` and reuse Tailwind classes
+- Customize `tailwind.config.js` theme if you need custom colors/spacing
+
+If you want, I can also commit these changes to `git` and create a short CONTRIBUTING guide.
