@@ -41,7 +41,7 @@ Open `http://localhost:3001` (Next.js may pick an alternative port if 3000 is in
 - If Next.js infers the wrong workspace root (multiple lockfiles warning), set `outputFileTracingRoot` in `next.config.mjs` or remove the extra lockfile.
 - If Tailwind classes aren't applied, ensure `globals.css` is imported in your root layout and that `tailwind.config.js` `content` paths include `src/app`.
 
-## Next steps
+## Next step
 
 - Add components under `src/components` and reuse Tailwind classes
 - Customize `tailwind.config.js` theme if you need custom colors/spacing
