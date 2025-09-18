@@ -9,7 +9,7 @@ This is the `viraasat` Next.js project configured to use Tailwind CSS v3.
 
    ```powershell
    cd "c:\Users\LENOVO\Music\visarat\Viraasat-landing-page\viraasat"
-   npm instal
+   npm install
    ```
 
 2. Run the development server
