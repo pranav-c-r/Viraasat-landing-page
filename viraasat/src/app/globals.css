@@ -2,16 +2,75 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Light Mode Colors (Default) */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #DDCAB0;
+  --surface: #CEB392;
+  --primary: #8F7C67;
+  --secondary: #796D5F;
+  --text-primary: #281E15;
+  --text-secondary: #796D5F;
+  --borders: #CDBBA1;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Dark Mode Colors */
+.dark {
+  --background: #281E15;
+  --surface: #796D5F;
+  --primary: #CEB392;
+  --secondary: #CDBBA1;
+  --text-primary: #DDCAB0;
+  --text-secondary: #8F7C67;
+  --borders: #3E332A;
+}
+
+/* Apply CSS custom properties to Tailwind classes */
+@layer base {
+  .bg-background { background-color: var(--background); }
+  .bg-surface { background-color: var(--surface); }
+  .bg-primary { background-color: var(--primary); }
+  .bg-secondary { background-color: var(--secondary); }
+  
+  .text-background { color: var(--background); }
+  .text-surface { color: var(--surface); }
+  .text-primary { color: var(--primary); }
+  .text-secondary { color: var(--secondary); }
+  .text-text-primary { color: var(--text-primary); }
+  .text-text-secondary { color: var(--text-secondary); }
+  
+  .border-background { border-color: var(--background); }
+  .border-surface { border-color: var(--surface); }
+  .border-primary { border-color: var(--primary); }
+  .border-secondary { border-color: var(--secondary); }
+  .border-borders { border-color: var(--borders); }
+  
+  /* Hover variants with proper opacity */
+  .hover\:bg-primary\/90:hover { 
+    background-color: color-mix(in srgb, var(--primary) 90%, transparent);
   }
+  .hover\:bg-background\/90:hover { 
+    background-color: color-mix(in srgb, var(--background) 90%, transparent);
+  }
+  .hover\:bg-primary:hover { background-color: var(--primary); }
+  .hover\:text-background:hover { color: var(--background); }
+}
+
+/* Global styles */
+body {
+  background-color: var(--background);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Smooth transitions for theme switching */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Scroll behavior */
+html {
+  scroll-behavior: smooth;
 }
 
 body {
