@@ -1,29 +1,83 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+
 export default function HowItWorks() {
+  const [activeStep, setActiveStep] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef(null);
+  
   const steps = [
     {
       step: "01",
       title: "Download App",
       description: "Get the Viraasat app from App Store or Play Store. Free download, no subscription required.",
-      icon: "📱"
+      icon: "📱",
+      color: "from-amber-400 to-orange-500",
+      culturalPattern: "🪷" // Lotus pattern symbolizing purity and new beginnings
     },
     {
       step: "02", 
       title: "Scan QR / Select Site",
       description: "Scan the QR code at heritage sites or choose from our digital catalog of locations.",
-      icon: "📷"
+      icon: "📷",
+      color: "from-emerald-400 to-teal-600",
+      culturalPattern: "🪔" // Diya pattern symbolizing discovery and enlightenment
     },
     {
       step: "03",
       title: "Explore in AR",
       description: "Immerse yourself in history with guided AR tours, 3D reconstructions, and interactive content.",
-      icon: "🔍"
+      icon: "🔍",
+      color: "from-purple-400 to-indigo-600",
+      culturalPattern: "🏛️" // Architectural pattern symbolizing exploration
     }
   ];
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          // Start step animation sequence
+          const interval = setInterval(() => {
+            setActiveStep(prev => (prev + 1) % steps.length);
+          }, 3000);
+          return () => clearInterval(interval);
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, [steps.length]);
+
   return (
-    <section className="py-20 bg-surface">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="text-center mb-16">
+    <section ref={sectionRef} className="py-28 bg-surface relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-20 left-10 w-64 h-64 bg-amber-200 rounded-full mix-blend-multiply filter blur-xl animate-pulse-slow animate-float"></div>
+        <div className="absolute top-1/2 right-20 w-80 h-80 bg-emerald-200 rounded-full mix-blend-multiply filter blur-xl animate-pulse-slow animate-float animation-delay-2000"></div>
+        <div className="absolute bottom-20 left-1/3 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl animate-pulse-slow animate-float animation-delay-4000"></div>
+      </div>
+
+      {/* Cultural pattern overlays */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-1/4 left-1/4 text-8xl opacity-20 animate-rotate-slow">🪷</div>
+        <div className="absolute bottom-1/3 right-1/4 text-9xl opacity-20 animate-rotate-slow animation-delay-3000">🪔</div>
+        <div className="absolute top-1/3 right-1/3 text-7xl opacity-20 animate-rotate-slow animation-delay-5000">🏛️</div>
+      </div>
+
+      <div className="max-w-6xl mx-auto px-6 relative z-10">
+        <div className={`text-center mb-20 transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
           <h2 className="text-4xl md:text-5xl font-bold text-text-primary mb-6">
             How It Works
           </h2>
@@ -32,38 +86,78 @@ export default function HowItWorks() {
           </p>
         </div>
         
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-3 gap-12 relative">
+          {/* Animated connecting line */}
+          <div className="hidden md:block absolute left-1/6 top-24 w-2/3 h-1 bg-gradient-to-r from-amber-400 via-emerald-400 to-purple-500 rounded-full opacity-30">
+            <div 
+              className="h-full bg-gradient-to-r from-amber-500 to-purple-600 rounded-full transition-all duration-1000 ease-out"
+              style={{ width: `${(activeStep + 1) * 33.33}%` }}
+            ></div>
+          </div>
+          
           {steps.map((step, index) => (
-            <div key={index} className="text-center">
-              {/* Step Number */}
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-primary text-background font-bold text-xl rounded-full mb-6">
+            <div 
+              key={index} 
+              className={`text-center relative transform transition-all duration-700 ease-out ${
+                isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+              }`}
+              style={{ transitionDelay: `${index * 200}ms` }}
+              onMouseEnter={() => setActiveStep(index)}
+            >
+              {/* Step Number with gradient and cultural pattern */}
+              <div className={`relative inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br ${step.color} text-background font-bold text-xl rounded-full mb-8 transform transition-all duration-500 ease-out ${activeStep === index ? 'scale-110 shadow-2xl' : 'scale-100'}`}>
                 {step.step}
+                {/* Cultural pattern overlay */}
+                <div className="absolute inset-0 flex items-center justify-center text-2xl opacity-20">
+                  {step.culturalPattern}
+                </div>
               </div>
               
-              {/* Icon */}
-              <div className="text-6xl mb-6">{step.icon}</div>
+              {/* Animated Icon */}
+              <div className={`text-6xl mb-8 transform transition-all duration-500 ${activeStep === index ? 'scale-110' : 'scale-100'}`}>
+                {step.icon}
+              </div>
               
               {/* Content */}
               <h3 className="text-2xl font-bold text-text-primary mb-4">{step.title}</h3>
               <p className="text-text-secondary leading-relaxed">{step.description}</p>
               
-              {/* Connector Line (except for last item) */}
-              {index < steps.length - 1 && (
-                <div className="hidden md:block absolute left-full top-1/2 w-full h-0.5 bg-borders transform -translate-y-1/2 -translate-x-1/2"></div>
-              )}
+              {/* Animated progress indicator for mobile */}
+              <div className="md:hidden mt-6">
+                <div className="flex justify-center space-x-2">
+                  {steps.map((_, i) => (
+                    <div
+                      key={i}
+                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                        i === index ? 'bg-primary w-6' : 'bg-borders'
+                      }`}
+                    ></div>
+                  ))}
+                </div>
+              </div>
             </div>
           ))}
         </div>
         
-        {/* Call to Action */}
-        <div className="text-center mt-16">
-          <div className="bg-background p-8 rounded-2xl max-w-2xl mx-auto">
+        {/* Enhanced Call to Action */}
+        <div className={`text-center mt-20 transform transition-all duration-1000 delay-700 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+          <div className="bg-background p-10 rounded-3xl max-w-2xl mx-auto shadow-2xl border border-borders/10 relative overflow-hidden">
+            {/* Decorative corner elements */}
+            <div className="absolute top-4 left-4 text-3xl text-primary opacity-20">🪷</div>
+            <div className="absolute top-4 right-4 text-3xl text-primary opacity-20">🪷</div>
+            <div className="absolute bottom-4 left-4 text-3xl text-primary opacity-20">🪷</div>
+            <div className="absolute bottom-4 right-4 text-3xl text-primary opacity-20">🪷</div>
+            
             <h3 className="text-2xl font-bold text-text-primary mb-4">Ready to Start Exploring?</h3>
-            <p className="text-text-secondary mb-6">
+            <p className="text-text-secondary mb-8">
               Join thousands of history enthusiasts discovering heritage through AR
             </p>
-            <button className="bg-primary hover:bg-primary/90 text-background px-8 py-4 rounded-lg font-semibold text-lg transition-colors">
-              Download Viraasat App
+            <button className="group relative bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-background px-10 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:-translate-y-1 shadow-lg hover:shadow-xl overflow-hidden">
+              <span className="relative z-10 flex items-center justify-center gap-2">
+                Download Viraasat App
+                <span className="transform group-hover:translate-x-1 transition-transform duration-300">→</span>
+              </span>
+              <span className="absolute inset-0 bg-gradient-to-r from-amber-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
             </button>
           </div>
         </div>
