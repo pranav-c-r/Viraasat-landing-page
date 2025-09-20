@@ -1,6 +1,7 @@
-'use client';
+"use client";
 
 import { useState, useEffect, useRef } from 'react';
+import CountUp from './CountUp';
 
 export default function Impact() {
   const [isVisible, setIsVisible] = useState(false);
@@ -41,7 +42,7 @@ export default function Impact() {
     }
   ];
   
-  const [countedStats, setCountedStats] = useState(stats.map(() => 0));
+  // countedStats state and interval-based counting removed in favor of CountUp
   const testimonials = [
     {
       quote: "Viraasat has revolutionized how we teach history. Students are more engaged than ever.",
@@ -62,34 +63,6 @@ export default function Impact() {
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
-          
-          // Animate counting up the stats with proper cleanup
-          const timers = stats.map((stat, index) => {
-            const target = stat.endValue;
-            const duration = 2000;
-            const steps = 60;
-            const increment = target / steps;
-            let current = 0;
-            
-            return setInterval(() => {
-              current += increment;
-              if (current >= target) {
-                current = target;
-                clearInterval(timers[index]);
-              }
-              
-              setCountedStats(prev => {
-                const newStats = [...prev];
-                newStats[index] = Math.floor(current);
-                return newStats;
-              });
-            }, duration / steps);
-          });
-          
-          // Cleanup function to clear all intervals
-          return () => {
-            timers.forEach(timer => clearInterval(timer));
-          };
         }
       },
       { threshold: 0.3 }
@@ -104,7 +77,7 @@ export default function Impact() {
         observer.unobserve(sectionRef.current);
       }
     };
-  }, [stats]);
+  }, []);
 
   return (
     <section ref={sectionRef} className="py-28 bg-background relative overflow-hidden">
@@ -143,14 +116,25 @@ export default function Impact() {
               <div className={`w-16 h-16 mx-auto mb-4 bg-gradient-to-br ${stat.color} rounded-2xl flex items-center justify-center text-2xl text-background`}>
                 {stat.icon}
               </div>
-              <div className="text-4xl md:text-5xl font-bold text-primary mb-2">
-                {stat.number.includes('%') 
-                  ? `${countedStats[index]}%` 
-                  : stat.number.includes('M+')
-                    ? `${countedStats[index]}M+`
-                    : `${countedStats[index]}+`
-                }
-              </div>
+                  <div className="text-4xl md:text-5xl font-bold text-primary mb-2">
+                    {/* Use CountUp component to animate numbers reliably */}
+                    {stat.number.includes('%') ? (
+                      <CountUp
+                        to={stat.endValue}
+                         duration={1.2}
+                        className="inline-block"
+                        separator={''}
+                      />
+                    ) : stat.number.includes('M+') ? (
+                      <>
+                         <CountUp to={stat.endValue} duration={1.2} className="inline-block" />M+
+                      </>
+                    ) : (
+                      <>
+                         <CountUp to={stat.endValue} duration={1.2} className="inline-block" />+
+                      </>
+                    )}
+                  </div>
               <div className="text-lg font-semibold text-text-primary mb-2">{stat.label}</div>
               <div className="text-text-secondary text-sm">{stat.description}</div>
             </div>
