@@ -514,7 +514,7 @@ function TajMahalModel({ collisionDetector }) {
 // Enhanced ground with better textures
 function Ground({ collisionDetector }) {
   const groundRef = useRef();
-  const grassTexture = useTexture('/textures/green3.jpg');
+  const grassTexture = useTexture('/textures/blue.jpg');
   grassTexture.wrapS = grassTexture.wrapT = 1000;
   grassTexture.repeat.set(20, 20);
 
