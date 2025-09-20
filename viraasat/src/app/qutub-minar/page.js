@@ -31,7 +31,7 @@ export default function QutubMinarPage() {
           </h1>
           <p className="text-xl md:text-2xl text-text-secondary max-w-4xl mx-auto leading-relaxed">
             Witness the tallest brick minaret in the world, a magnificent example of Indo-Islamic architecture. 
-            This UNESCO World Heritage Site stands as a testament to Delhi's rich medieval history.
+            This UNESCO World Heritage Site stands as a testament to Delhi&apos;s rich medieval history.
           </p>
         </div>
       </section>
@@ -84,7 +84,7 @@ export default function QutubMinarPage() {
                 </div>
                 <div className="bg-surface/30 rounded-xl p-6 backdrop-blur-sm border border-borders/20">
                   <h4 className="text-xl font-semibold text-text-primary mb-2">Calligraphy</h4>
-                  <p className="text-text-secondary">Beautiful Arabic calligraphy from the Quran adorns the tower's surface</p>
+                  <p className="text-text-secondary">Beautiful Arabic calligraphy from the Quran adorns the tower&apos;s surface</p>
                 </div>
                 <div className="bg-surface/30 rounded-xl p-6 backdrop-blur-sm border border-borders/20">
                   <h4 className="text-xl font-semibold text-text-primary mb-2">Red Sandstone</h4>

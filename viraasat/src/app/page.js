@@ -57,7 +57,7 @@ export default function Home() {
               Explore Heritage Sites
             </h2>
             <p className="text-xl text-text-secondary max-w-3xl mx-auto">
-              Navigate through India's magnificent heritage sites in an immersive 3D experience. 
+              Navigate through India&apos;s magnificent heritage sites in an immersive 3D experience. 
               Drag to rotate and discover the stories behind each monument.
             </p>
           </div>
