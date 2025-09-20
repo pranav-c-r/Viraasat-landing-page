@@ -228,56 +228,7 @@ export default function Hero() {
           onHoverStart={() => setIsDemoHovered(true)}
           onHoverEnd={() => setIsDemoHovered(false)}
         >
-          {/* AR demo mockup with glassmorphism effect */}
-          <motion.div 
-            className="bg-surface/80 p-8 rounded-2xl shadow-2xl max-w-2xl mx-auto backdrop-blur-md border border-white/10"
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.1, duration: 0.8 }}
-          >
-            <div className="aspect-video bg-borders/20 rounded-lg flex items-center justify-center relative overflow-hidden">
-              <AnimatePresence>
-                {isDemoHovered && (
-                  <motion.div 
-                    className="absolute inset-0 bg-primary/5 flex items-center justify-center"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      exit={{ scale: 0 }}
-                      className="text-primary text-lg font-semibold"
-                    >
-                      Experience in AR
-                    </motion.div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              
-              <motion.span 
-                className="text-text-secondary"
-                animate={{ opacity: isDemoHovered ? 0.5 : 1 }}
-              >
-                AR Demo Mockup
-              </motion.span>
-              
-              {/* Animated scanning effect */}
-              <motion.div 
-                className="absolute top-0 left-0 w-full h-1 bg-primary"
-                initial={{ y: 0 }}
-                animate={{ y: '100%' }}
-                transition={{ 
-                  repeat: Infinity, 
-                  repeatType: 'loop', 
-                  duration: 2, 
-                  ease: 'easeInOut' 
-                }}
-                style={{ boxShadow: '0 0 10px 2px rgba(139, 90, 43, 0.5)' }}
-              />
-            </div>
-          </motion.div>
+          
         </motion.div>
       </div>
       

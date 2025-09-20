@@ -1,7 +1,6 @@
 import Hero from './components/Hero';
 import About from './components/About';
 import Features from './components/Features';
-import Showcase from './components/Showcase';
 import Impact from './components/Impact';
 import HowItWorks from './components/HowItWorks';
 import Community from './components/Community';
@@ -71,7 +70,6 @@ export default function Home() {
 
       <About/>
       <Features/>
-      <Showcase/>
       <Impact/>
       <HowItWorks/>
       <Community/>

@@ -138,18 +138,18 @@ export default function Footer() {
               <p className="flex items-center group">
                 <span className="mr-3 group-hover:scale-110 transition-transform duration-300">📧</span>
                 <a href="mailto:hello@viraasat.com" className="hover:text-primary transition-colors duration-300">
-                  hello@viraasat.com
+                  pranavr24bcs22@iiitkottayam.ac.in
                 </a>
               </p>
               <p className="flex items-center group">
                 <span className="mr-3 group-hover:scale-110 transition-transform duration-300">📞</span>
                 <a href="tel:+15551234567" className="hover:text-primary transition-colors duration-300">
-                  +1 (555) 123-4567
+                  +91 9999999999
                 </a>
               </p>
               <p className="flex items-center group">
                 <span className="mr-3 group-hover:scale-110 transition-transform duration-300">📍</span>
-                <span>San Francisco, CA</span>
+                <span>India</span>
               </p>
             </div>
             
