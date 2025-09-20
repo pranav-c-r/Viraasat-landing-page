@@ -30,7 +30,7 @@ export default function SunTemplePage() {
             Konark Sun Temple
           </h1>
           <p className="text-xl md:text-2xl text-text-secondary max-w-4xl mx-auto leading-relaxed">
-            Marvel at the architectural wonder dedicated to the Hindu sun god Surya. Known as the "Black Pagoda," 
+            Marvel at the architectural wonder dedicated to the Hindu sun god Surya. Known as the &quot;Black Pagoda,&quot; 
             this 13th-century temple is conceived as a gigantic chariot with elaborately carved stone wheels.
           </p>
         </div>
@@ -66,7 +66,7 @@ export default function SunTemplePage() {
                 <p>
                   The Konark Sun Temple was built in the 13th century by King Narasimhadeva I of the Eastern Ganga Dynasty. 
                   This magnificent temple is designed in the shape of a gigantic chariot with 24 wheels drawn by seven horses, 
-                  all carved from stone, representing the sun god Surya's chariot.
+                  all carved from stone, representing the sun god Surya&apos;s chariot.
                 </p>
                 <p>
                   The temple is famous for its exceptional architecture and stone carvings that depict various aspects of life, 

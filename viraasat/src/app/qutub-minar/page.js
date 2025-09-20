@@ -30,8 +30,7 @@ export default function QutubMinarPage() {
             Qutub Minar
           </h1>
           <p className="text-xl md:text-2xl text-text-secondary max-w-4xl mx-auto leading-relaxed">
-            Witness the tallest brick minaret in the world, a magnificent example of Indo-Islamic architecture. 
-            This UNESCO World Heritage Site stands as a testament to Delhi&apos;s rich medieval history.
+            Explore the world&apos;s tallest brick minaret, a marvel of Indo-Islamic architecture built in the early 13th century.
           </p>
         </div>
       </section>
@@ -45,7 +44,7 @@ export default function QutubMinarPage() {
                 Interactive 3D Model
               </h2>
               <p className="text-lg text-text-secondary max-w-2xl mx-auto">
-                Explore the intricate carvings and architectural details of this 12th-century masterpiece. Drag to rotate, scroll to zoom.
+                Rotate and zoom into the Qutub Minar&apos;s intricate carvings and towering presence.
               </p>
             </div>
             
@@ -64,13 +63,11 @@ export default function QutubMinarPage() {
               <h3 className="text-3xl font-bold text-text-primary">Historical Significance</h3>
               <div className="prose prose-lg text-text-secondary space-y-4">
                 <p>
-                  The Qutub Minar was built in the early 13th century by Qutb-ud-din Aibak, the first Muslim ruler of Delhi. 
-                  Construction was later completed by his successor Iltutmish. The minaret was built to celebrate Muslim dominance 
-                  in Delhi after the defeat of the last Hindu kingdom.
+                  The Qutub Minar was commissioned by Qutb-ud-din Aibak in 1193 and completed by his successor Iltutmish. 
+                  Standing at 73 meters, it symbolizes the beginning of Muslim rule in India.
                 </p>
                 <p>
-                  Standing at 72.5 meters (238 feet), it remains the tallest brick minaret in the world and showcases 
-                  the brilliant fusion of Indo-Islamic architectural styles that would define the region for centuries.
+                  It remains one of Delhi&apos;s most visited monuments and is part of the Qutub Complex, which is a UNESCO World Heritage Site.
                 </p>
               </div>
             </div>
@@ -79,16 +76,16 @@ export default function QutubMinarPage() {
               <h3 className="text-3xl font-bold text-text-primary">Architectural Features</h3>
               <div className="space-y-4">
                 <div className="bg-surface/30 rounded-xl p-6 backdrop-blur-sm border border-borders/20">
-                  <h4 className="text-xl font-semibold text-text-primary mb-2">Five Stories</h4>
-                  <p className="text-text-secondary">The minaret has five distinct stories, each marked by a projecting balcony</p>
+                  <h4 className="text-xl font-semibold text-text-primary mb-2">Five Distinct Storeys</h4>
+                  <p className="text-text-secondary">Each marked by a projecting balcony and tapering design</p>
                 </div>
                 <div className="bg-surface/30 rounded-xl p-6 backdrop-blur-sm border border-borders/20">
-                  <h4 className="text-xl font-semibold text-text-primary mb-2">Calligraphy</h4>
-                  <p className="text-text-secondary">Beautiful Arabic calligraphy from the Quran adorns the tower&apos;s surface</p>
+                  <h4 className="text-xl font-semibold text-text-primary mb-2">Red Sandstone &amp; Marble</h4>
+                  <p className="text-text-secondary">Exquisite use of red sandstone with later additions in marble</p>
                 </div>
                 <div className="bg-surface/30 rounded-xl p-6 backdrop-blur-sm border border-borders/20">
-                  <h4 className="text-xl font-semibold text-text-primary mb-2">Red Sandstone</h4>
-                  <p className="text-text-secondary">Built primarily with red sandstone and marble, showcasing exquisite craftsmanship</p>
+                  <h4 className="text-xl font-semibold text-text-primary mb-2">Inscriptions</h4>
+                  <p className="text-text-secondary">Verses from the Quran inscribed throughout the structure</p>
                 </div>
               </div>
             </div>
@@ -103,15 +100,15 @@ export default function QutubMinarPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <div className="text-center">
               <div className="text-3xl font-bold text-accent mb-2">1193</div>
-              <div className="text-text-secondary">Construction Started</div>
+              <div className="text-text-secondary">Construction Began</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-accent mb-2">72.5m</div>
+              <div className="text-3xl font-bold text-accent mb-2">73m</div>
               <div className="text-text-secondary">Height</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-accent mb-2">379</div>
-              <div className="text-text-secondary">Steps to Top</div>
+              <div className="text-3xl font-bold text-accent mb-2">5</div>
+              <div className="text-text-secondary">Distinct Storeys</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-accent mb-2">1993</div>

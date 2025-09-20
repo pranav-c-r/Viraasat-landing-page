@@ -31,7 +31,7 @@ export default function RedFortPage() {
           </h1>
           <p className="text-xl md:text-2xl text-text-secondary max-w-4xl mx-auto leading-relaxed">
             Discover the historic fortified palace that served as the main residence of the Mughal emperors. 
-            A symbol of India's rich heritage and the site of India's Independence Day celebrations.
+            A symbol of India&apos;s rich heritage and the site of India&apos;s Independence Day celebrations.
           </p>
         </div>
       </section>
@@ -45,7 +45,7 @@ export default function RedFortPage() {
                 Interactive 3D Model
               </h2>
               <p className="text-lg text-text-secondary max-w-2xl mx-auto">
-                Explore the magnificent red sandstone walls and intricate Mughal architecture. Drag to rotate, scroll to zoom.
+                Explore the massive red sandstone walls and the grandeur of Mughal architecture. Drag to rotate, scroll to zoom.
               </p>
             </div>
             
@@ -64,13 +64,12 @@ export default function RedFortPage() {
               <h3 className="text-3xl font-bold text-text-primary">Historical Significance</h3>
               <div className="prose prose-lg text-text-secondary space-y-4">
                 <p>
-                  The Red Fort, known as Lal Qila in Hindi, was constructed by the Mughal Emperor Shah Jahan in 1648 
-                  when he shifted his capital from Agra to Delhi. This magnificent fortress served as the main residence 
-                  of the Mughal emperors for nearly 200 years.
+                  The Red Fort, known as Lal Qila, was constructed by the Mughal Emperor Shah Jahan in 1648 when he moved his capital from Agra to Delhi. 
+                  This impressive fortress was the main residence of Mughal emperors for nearly 200 years.
                 </p>
                 <p>
-                  The fort is most famous for being the site where India's first Prime Minister, Jawaharlal Nehru, 
-                  raised the Indian national flag on August 15, 1947, marking India's independence from British rule.
+                  It is most famous as the location where India&apos;s first Prime Minister, Jawaharlal Nehru, 
+                  hoisted the national flag on August 15, 1947, marking India&apos;s independence from British rule.
                 </p>
               </div>
             </div>
@@ -80,15 +79,15 @@ export default function RedFortPage() {
               <div className="space-y-4">
                 <div className="bg-surface/30 rounded-xl p-6 backdrop-blur-sm border border-borders/20">
                   <h4 className="text-xl font-semibold text-text-primary mb-2">Red Sandstone Walls</h4>
-                  <p className="text-text-secondary">Massive walls built with red sandstone, giving the fort its distinctive name</p>
+                  <p className="text-text-secondary">The massive walls give the fort its distinctive color and grandeur</p>
                 </div>
                 <div className="bg-surface/30 rounded-xl p-6 backdrop-blur-sm border border-borders/20">
                   <h4 className="text-xl font-semibold text-text-primary mb-2">Diwan-i-Aam</h4>
-                  <p className="text-text-secondary">The Hall of Public Audience where the emperor met common people</p>
+                  <p className="text-text-secondary">The Hall of Public Audience where the emperor met common citizens</p>
                 </div>
                 <div className="bg-surface/30 rounded-xl p-6 backdrop-blur-sm border border-borders/20">
                   <h4 className="text-xl font-semibold text-text-primary mb-2">Diwan-i-Khas</h4>
-                  <p className="text-text-secondary">The Hall of Private Audience, once home to the famous Peacock Throne</p>
+                  <p className="text-text-secondary">The Hall of Private Audience, formerly home to the Peacock Throne</p>
                 </div>
               </div>
             </div>
