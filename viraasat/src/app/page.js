@@ -6,8 +6,8 @@ import HowItWorks from './components/HowItWorks';
 import Community from './components/Community';
 import CTA from './components/CTA';
 import Footer from './components/Footer';
-// import ThemeToggle from './components/ThemeToggle';
 import InfiniteMenu from './components/InfiniteMenu';
+import Navbar from './components/Navbar';
 
 // Heritage site data with high-quality stock photos
 const heritageItems = [
@@ -46,9 +46,13 @@ const heritageItems = [
 export default function Home() {
   return (
     <main className="min-h-screen">
-      {/* <ThemeToggle/> */}
-      <Hero/>
-      
+      <Navbar />
+
+      {/* Hero Section */}
+      <section id="home">
+        <Hero />
+      </section>
+
       {/* Interactive Heritage Explorer */}
       <section className="py-20 bg-gradient-to-b from-background to-surface">
         <div className="max-w-7xl mx-auto px-6">
@@ -63,18 +67,37 @@ export default function Home() {
           </div>
           
           <div className="h-[600px] rounded-2xl overflow-hidden shadow-2xl border border-borders/20 bg-surface/20 backdrop-blur-sm">
-            <InfiniteMenu items={heritageItems}/>
+            <InfiniteMenu items={heritageItems} />
           </div>
         </div>
       </section>
 
-      <About/>
-      <Features/>
-      <Impact/>
-      <HowItWorks/>
-      <Community/>
-      <CTA/>
-      <Footer/>
+      {/* Wrapped Sections with IDs for Scroll Navigation */}
+      <section id="about">
+        <About />
+      </section>
+
+      <section id="features">
+        <Features />
+      </section>
+
+      <section id="impact">
+        <Impact />
+      </section>
+
+      <section id="howitworks">
+        <HowItWorks />
+      </section>
+
+      <section id="community">
+        <Community />
+      </section>
+
+      <section id="cta">
+        <CTA />
+      </section>
+
+      <Footer />
     </main>
   );
 }

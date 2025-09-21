@@ -12,6 +12,10 @@
   --text-secondary: #796D5F;
   --borders: #CDBBA1;
 }
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
 
 /* Dark Mode Colors */
 .dark {
