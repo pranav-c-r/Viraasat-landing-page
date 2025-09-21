@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import CountUp from './CountUp';
 import SpotlightCard from './SpotlightCard';
+import { Landmark, GraduationCap, Globe, Zap, Globe2, Handshake, Star } from 'lucide-react';
 
 export default function Impact() {
   const [isVisible, setIsVisible] = useState(false);
@@ -13,7 +14,7 @@ export default function Impact() {
       number: "1000+",
       label: "Monuments Under Threat",
       description: "Historical sites facing deterioration worldwide",
-      icon: "🏛️",
+      icon: <Landmark className="w-8 h-8 text-white" aria-hidden="true" />,
       color: "from-amber-500 to-orange-600",
       endValue: 1000,
       spotlightColor: "rgba(255, 255, 0, 0.7)"
@@ -22,7 +23,7 @@ export default function Impact() {
       number: "50M+",
       label: "Students Reached",
       description: "Educational impact through digital preservation",
-      icon: "🎓",
+      icon: <GraduationCap className="w-8 h-8 text-white" aria-hidden="true" />,
       color: "from-emerald-500 to-teal-600",
       endValue: 50,
       spotlightColor: "rgba(255, 0, 0, 0.7)"
@@ -31,7 +32,7 @@ export default function Impact() {
       number: "25+",
       label: "Languages Supported",
       description: "Making heritage accessible globally",
-      icon: "🌐",
+      icon: <Globe className="w-8 h-8 text-white" aria-hidden="true" />,
       color: "from-blue-500 to-indigo-600",
       endValue: 25,
       spotlightColor: "rgba(255, 165, 0, 0.7)"
@@ -40,7 +41,7 @@ export default function Impact() {
       number: "95%",
       label: "User Engagement",
       description: "Students show increased interest in history",
-      icon: "💫",
+      icon: <Zap className="w-8 h-8 text-white" aria-hidden="true" />,
       color: "from-purple-500 to-pink-600",
       endValue: 95,
       spotlightColor: "rgba(255, 255, 0, 0.7)"
@@ -52,14 +53,14 @@ export default function Impact() {
       quote: "Viraasat has revolutionized how we teach history. Students are more engaged than ever.",
       author: "Dr. Sarah Johnson",
       role: "History Professor, Oxford University",
-      avatar: "👩‍🏫",
+      avatar: "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg",
       spotlightColor: "rgba(255, 0, 0, 0.7)"
     },
     {
       quote: "The AR experience brought our heritage tour to life. Visitors love the interactive elements.",
       author: "Raj Patel",
       role: "Tourism Director, Archaeological Survey",
-      avatar: "👨‍💼",
+      avatar: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg",
       spotlightColor: "rgba(255, 165, 0, 0.7)"
     }
   ];
@@ -96,9 +97,9 @@ export default function Impact() {
 
       {/* Cultural pattern overlays */}
       <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-1/4 left-1/4 text-8xl opacity-20 animate-rotate-slow">🪷</div>
-        <div className="absolute bottom-1/3 right-1/4 text-9xl opacity-20 animate-rotate-slow animation-delay-3000">🪔</div>
-        <div className="absolute top-1/3 right-1/3 text-7xl opacity-20 animate-rotate-slow animation-delay-5000">📜</div>
+  <div className="absolute top-1/4 left-1/4 text-8xl opacity-20 animate-rotate-slow">🌸</div>
+  <div className="absolute bottom-1/3 right-1/4 text-9xl opacity-20 animate-rotate-slow animation-delay-3000">🕯️</div>
+  <div className="absolute top-1/3 right-1/3 text-7xl opacity-20 animate-rotate-slow animation-delay-5000">📜</div>
       </div>
 
       <div className="max-w-6xl mx-auto px-6 relative z-10">
@@ -163,10 +164,10 @@ export default function Impact() {
             spotlightColor="rgba(255, 165, 0, 0.7)"
           >
             {/* Decorative corner elements */}
-            <div className="absolute top-4 left-4 text-3xl text-primary opacity-20">🪷</div>
-            <div className="absolute top-4 right-4 text-3xl text-primary opacity-20">🪷</div>
-            <div className="absolute bottom-4 left-4 text-3xl text-primary opacity-20">🪷</div>
-            <div className="absolute bottom-4 right-4 text-3xl text-primary opacity-20">🪷</div>
+            <div className="absolute top-4 left-4 text-3xl text-primary opacity-20">🌸</div>
+            <div className="absolute top-4 right-4 text-3xl text-primary opacity-20">🌸</div>
+            <div className="absolute bottom-4 left-4 text-3xl text-primary opacity-20">🌸</div>
+            <div className="absolute bottom-4 right-4 text-3xl text-primary opacity-20">🌸</div>
             
             <div className="max-w-4xl mx-auto text-center relative z-10">
               <h3 className="text-2xl font-bold text-black mb-6">Our Impact</h3>
@@ -195,9 +196,9 @@ export default function Impact() {
               <p className="text-gray-700 italic mb-6 text-lg relative z-10">"{testimonial.quote}"</p>
               
               <div className="flex items-center">
-                <div className="text-3xl mr-4 bg-primary/10 p-3 rounded-full">
-                  {testimonial.avatar}
-                </div>
+                <div className="text-3xl mr-4 bg-primary/10 p-3 rounded-full w-12 h-12 overflow-hidden">
+                    <img src={testimonial.avatar} alt={testimonial.author} className="w-full h-full object-cover" />
+                  </div>
                 <div>
                   <div className="font-semibold text-black">{testimonial.author}</div>
                   <div className="text-primary text-sm">{testimonial.role}</div>
@@ -216,21 +217,30 @@ export default function Impact() {
               style={{ backgroundColor: '#CEB392' }}
               spotlightColor="rgba(255, 255, 0, 0.7)"
             >
-              <span className="mr-2">🌍</span> 45+ Countries
+              <span className="inline-flex items-center justify-center w-8 h-8 mr-3 rounded-full bg-amber-500 text-white">
+                <Globe2 className="w-4 h-4" />
+              </span>
+              <span className="font-semibold">45+ Countries</span>
             </SpotlightCard>
             <SpotlightCard 
               className="flex items-center px-4 py-2 border border-gray-200"
               style={{ backgroundColor: '#CEB392' }}
               spotlightColor="rgba(255, 0, 0, 0.7)"
             >
-              <span className="mr-2">🤝</span> 120+ Partners
+              <span className="inline-flex items-center justify-center w-8 h-8 mr-3 rounded-full bg-emerald-500 text-white">
+                <Handshake className="w-4 h-4" />
+              </span>
+              <span className="font-semibold">120+ Partners</span>
             </SpotlightCard>
             <SpotlightCard 
               className="flex items-center px-4 py-2 border border-gray-200"
               style={{ backgroundColor: '#CEB392' }}
               spotlightColor="rgba(255, 165, 0, 0.7)"
             >
-              <span className="mr-2">📊</span> 4.9/5 Rating
+              <span className="inline-flex items-center justify-center w-8 h-8 mr-3 rounded-full bg-rose-500 text-white">
+                <Star className="w-4 h-4" />
+              </span>
+              <span className="font-semibold">4.9/5 Rating</span>
             </SpotlightCard>
           </div>
         </div>
