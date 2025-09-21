@@ -402,6 +402,7 @@ function makeVertexArray(gl, bufLocNumElmPairs, indices) {
 }
 
 function resizeCanvasToDisplaySize(canvas) {
+  if (typeof window === 'undefined') return false; 
   const dpr = Math.min(2, window.devicePixelRatio);
   const displayWidth = Math.round(canvas.clientWidth * dpr);
   const displayHeight = Math.round(canvas.clientHeight * dpr);

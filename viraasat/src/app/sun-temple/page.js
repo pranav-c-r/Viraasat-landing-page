@@ -3,7 +3,11 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
-import SunTemple from '../components/3dmodels/SunTemple';
+import dynamic from 'next/dynamic';
+
+const SunTemple = dynamic(() => import('../components/3dmodels/SunTemple'), {
+  ssr: false
+});
 
 export default function SunTemplePage() {
   return (

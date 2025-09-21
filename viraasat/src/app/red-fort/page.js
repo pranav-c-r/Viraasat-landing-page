@@ -3,7 +3,11 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
-import RedFort from '../components/3dmodels/RedFort';
+import dynamic from 'next/dynamic';
+
+const RedFort = dynamic(() => import('../components/3dmodels/RedFort'), {
+  ssr: false
+});
 
 export default function RedFortPage() {
   return (

@@ -1,3 +1,4 @@
+'use client';
 import Hero from './components/Hero';
 import About from './components/About';
 import Features from './components/Features';
@@ -6,10 +7,13 @@ import HowItWorks from './components/HowItWorks';
 import Community from './components/Community';
 import CTA from './components/CTA';
 import Footer from './components/Footer';
-import InfiniteMenu from './components/InfiniteMenu';
 import Navbar from './components/Navbar';
+import dynamic from 'next/dynamic';
 
-// Heritage site data with high-quality stock photos
+const InfiniteMenu = dynamic(() => import('./components/InfiniteMenu'), {
+  ssr: false
+});
+
 const heritageItems = [
   {
     image: 'https://images.pexels.com/photos/3881104/pexels-photo-3881104.jpeg',
@@ -48,12 +52,10 @@ export default function Home() {
     <main className="min-h-screen">
       <Navbar />
 
-      {/* Hero Section */}
       <section id="home">
         <Hero />
       </section>
 
-      {/* Interactive Heritage Explorer */}
       <section className="py-20 bg-gradient-to-b from-background to-surface">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-12">
@@ -72,7 +74,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Wrapped Sections with IDs for Scroll Navigation */}
       <section id="about">
         <About />
       </section>

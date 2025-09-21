@@ -3,14 +3,17 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
-import TajMahal from '../components/3dmodels/TajMahal';
+import dynamic from 'next/dynamic';
+
+const TajMahal = dynamic(() => import('../components/3dmodels/TajMahal'), {
+  ssr: false
+});
 
 export default function TajMahalPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-background via-surface/50 to-background">
       <ThemeToggle />
       
-      {/* Header */}
       <div className="relative z-10 pt-8 pb-6">
         <div className="max-w-7xl mx-auto px-6">
           <Link 
@@ -23,7 +26,6 @@ export default function TajMahalPage() {
         </div>
       </div>
 
-      {/* Hero Section */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <h1 className="text-5xl md:text-7xl font-bold text-text-primary mb-6 bg-gradient-to-r from-text-primary via-accent to-text-primary bg-clip-text text-transparent">
@@ -36,7 +38,6 @@ export default function TajMahalPage() {
         </div>
       </section>
 
-      {/* 3D Model Section */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-6">
           <div className="bg-surface/20 backdrop-blur-xl rounded-3xl p-8 md:p-12 border border-borders/30 shadow-2xl">
@@ -56,7 +57,6 @@ export default function TajMahalPage() {
         </div>
       </section>
 
-      {/* Information Section */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-12 items-start">
@@ -95,7 +95,6 @@ export default function TajMahalPage() {
         </div>
       </section>
 
-      {/* Quick Facts */}
       <section className="py-12 bg-surface/10">
         <div className="max-w-7xl mx-auto px-6">
           <h3 className="text-3xl font-bold text-text-primary text-center mb-12">Quick Facts</h3>
@@ -120,7 +119,6 @@ export default function TajMahalPage() {
         </div>
       </section>
 
-      {/* Navigation Footer */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <Link 

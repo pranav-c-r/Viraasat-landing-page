@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import CircularGallery from './CircularGallery'
 
 // Cultural pattern background component
@@ -130,13 +130,20 @@ export default function Features() {
 
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-10%" });
+  const [galleryItems, setGalleryItems] = useState([]);
+
+  useEffect(() => {
+    const items = features.map((feature, index) => ({
+      image: createFeatureImage(feature.icon, feature.title, feature.description, index),
+      text: feature.title
+    }));
+    setGalleryItems(items);
+  }, []);
 
   return (
     <section ref={sectionRef} className="py-20 bg-background relative overflow-hidden">
-      {/* Cultural pattern background */}
       <CulturalPatternBg />
       
-      {/* Floating decorative elements */}
       <div className="absolute top-10 left-5 w-24 h-24 text-primary/10">
         <svg viewBox="0 0 100 100">
           <path d="M50,10 A40,40 0 1,1 50,90 A40,40 0 1,1 50,10 Z" fill="none" stroke="currentColor" strokeWidth="2"/>
@@ -170,7 +177,6 @@ export default function Features() {
           </motion.p>
         </motion.div>
         
-        {/* Circular Gallery replacing the grid layout */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.8 }}
           animate={isInView ? { opacity: 1, scale: 1 } : {}}
@@ -178,10 +184,7 @@ export default function Features() {
           style={{ height: '600px', position: 'relative' }}
         >
           <CircularGallery 
-            items={features.map((feature, index) => ({
-              image: createFeatureImage(feature.icon, feature.title, feature.description, index),
-              text: feature.title
-            }))}
+            items={galleryItems}
             bend={3} 
             textColor="#ffffff" 
             borderRadius={0.05} 

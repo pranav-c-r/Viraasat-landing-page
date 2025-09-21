@@ -4,9 +4,8 @@ import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { OrbitControls, useGLTF, Sky, Environment, Text, useTexture, Stars, Cloud, Html } from '@react-three/drei';
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { Vector3, Euler, Box3, Sphere, Raycaster, Mesh, MathUtils, Color } from 'three';
-import { Camera, Settings, Sun, Moon, Volume2, VolumeX, Eye, EyeOff } from 'lucide-react';
+import { Camera, Settings, Sun, Moon, Volume2, VolumeX, Eye, EyeOff, RotateCcw, Move3D } from 'lucide-react';
 
-// Device detection functions
 const isMobile = () => {
   if (typeof window === 'undefined') return false;
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -17,17 +16,52 @@ const isAndroid = () => {
   return /Android/i.test(navigator.userAgent);
 };
 
-// AR View Component for Android Mobile
+const supportsAR = async () => {
+  if (typeof window === 'undefined') return false;
+  
+  try {
+    if ('xr' in navigator) {
+      const supported = await navigator.xr.isSessionSupported('immersive-ar');
+      if (supported) return true;
+    }
+    
+    if (isAndroid()) {
+      const userAgent = navigator.userAgent;
+      const androidVersion = userAgent.match(/Android (\d+)/);
+      if (androidVersion && parseInt(androidVersion[1]) >= 7) {
+        return true;
+      }
+    }
+    
+    if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+      const iosVersion = navigator.userAgent.match(/OS (\d+)_/);
+      if (iosVersion && parseInt(iosVersion[1]) >= 12) {
+        return true;
+      }
+    }
+    
+    return false;
+  } catch (error) {
+    console.log('AR support check failed:', error);
+    return false;
+  }
+};
+
+const hasGyroscope = () => {
+  if (typeof window === 'undefined') return false;
+  
+  return 'DeviceOrientationEvent' in window && 
+         'DeviceMotionEvent' in window;
+};
+
 function ARView() {
   useEffect(() => {
-    // Load model-viewer script
     const script = document.createElement('script');
     script.type = 'module';
     script.src = 'https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js';
     document.head.appendChild(script);
 
     return () => {
-      // Cleanup
       if (document.head.contains(script)) {
         document.head.removeChild(script);
       }
@@ -78,8 +112,6 @@ function ARView() {
         <p className="text-sm mb-2">• Pinch to zoom in/out</p>
         <p className="text-sm">• Tap "View in AR" to place the temple in your real world!</p>
       </div>
-
-      {/* Info panel */}
       <div className="absolute bottom-4 left-4 right-4 bg-black bg-opacity-80 text-white p-3 rounded-lg text-center">
         <p className="text-sm">Experience the ancient Sun Temple in Augmented Reality</p>
       </div>
@@ -87,7 +119,166 @@ function ARView() {
   );
 }
 
-// Audio Manager for spatial audio (ORIGINAL CODE)
+function GyroscopeView() {
+  const [isActive, setIsActive] = useState(false);
+  const [rotation, setRotation] = useState({ x: 0, y: 0, z: 0 });
+  const [showCamera, setShowCamera] = useState(false);
+  const [cameraStream, setCameraStream] = useState(null);
+  const videoRef = useRef();
+
+  useEffect(() => {
+    let orientationHandler = null;
+
+    const startGyroscope = () => {
+      orientationHandler = (event) => {
+        const alpha = event.alpha || 0;
+        const beta = event.beta || 0;  
+        const gamma = event.gamma || 0;
+
+        setRotation({
+          x: beta * (Math.PI / 180),
+          y: alpha * (Math.PI / 180),
+          z: gamma * (Math.PI / 180)
+        });
+      };
+
+      if (DeviceOrientationEvent.requestPermission) {
+        DeviceOrientationEvent.requestPermission()
+          .then(permissionState => {
+            if (permissionState === 'granted') {
+              window.addEventListener('deviceorientation', orientationHandler);
+            }
+          });
+      } else {
+        window.addEventListener('deviceorientation', orientationHandler);
+      }
+    };
+
+    const startCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: 'environment' }
+        });
+        setCameraStream(stream);
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch (error) {
+        console.log('Camera access failed:', error);
+      }
+    };
+
+    if (isActive) {
+      startGyroscope();
+      if (showCamera) {
+        startCamera();
+      }
+    }
+
+    return () => {
+      if (orientationHandler) {
+        window.removeEventListener('deviceorientation', orientationHandler);
+      }
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [isActive, showCamera]);
+
+  const toggleMagicWindow = () => {
+    setIsActive(!isActive);
+    setShowCamera(!showCamera);
+  };
+
+  return (
+    <div className="w-full h-screen relative bg-sky-200">
+      {/* Camera background */}
+      {showCamera && cameraStream && (
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      )}
+
+      {/* 3D Scene with gyroscope rotation */}
+      <div className="absolute inset-0">
+        <Canvas camera={{ position: [0, 2, 5], fov: 75 }}>
+          <ambientLight intensity={0.6} />
+          <directionalLight position={[10, 10, 5]} intensity={1} />
+          
+          <group rotation={[rotation.x * 0.5, -rotation.y * 0.5, rotation.z * 0.1]}>
+            <TempleModel />
+          </group>
+        </Canvas>
+      </div>
+
+      {/* Controls */}
+      <div className="absolute top-4 left-4 right-4 bg-black bg-opacity-80 text-white p-4 rounded-lg">
+        <h2 className="text-lg font-bold mb-2">🏛️ Sun Temple 360° View</h2>
+        <p className="text-sm mb-2">• Move your phone around to explore the temple</p>
+        <p className="text-sm mb-3">• The temple will rotate as you move your device</p>
+        
+        <div className="flex gap-2">
+          <button
+            onClick={toggleMagicWindow}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
+              isActive 
+                ? 'bg-red-600 hover:bg-red-700' 
+                : 'bg-blue-600 hover:bg-blue-700'
+            } text-white`}
+          >
+            <Move3D size={16} />
+            {isActive ? 'Stop Magic Window' : 'Start Magic Window'}
+          </button>
+        </div>
+      </div>
+
+      {/* Info panel */}
+      <div className="absolute bottom-4 left-4 right-4 bg-black bg-opacity-80 text-white p-3 rounded-lg text-center">
+        <p className="text-sm">
+          {isActive 
+            ? 'Magic Window Active - Move your phone to explore!' 
+            : 'Experience the Sun Temple with device motion'
+          }
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Mobile3DViewer() {
+  return (
+    <div className="w-full h-screen relative">
+      <Canvas camera={{ position: [0, 2, 8], fov: 75 }}>
+        <ambientLight intensity={0.6} />
+        <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
+        <TempleModel />
+        <Ground />
+        <OrbitControls 
+          enableZoom={true} 
+          enableRotate={true} 
+          enablePan={false}
+          maxDistance={15}
+          minDistance={3}
+        />
+      </Canvas>
+      
+      {/* Instructions */}
+      <div className="absolute top-4 left-4 right-4 bg-black bg-opacity-80 text-white p-4 rounded-lg">
+        <h2 className="text-lg font-bold mb-2">🏛️ Sun Temple 3D Viewer</h2>
+        <p className="text-sm mb-1">• Touch and drag to rotate</p>
+        <p className="text-sm">• Pinch to zoom in/out</p>
+      </div>
+      
+      <div className="absolute bottom-4 left-0 right-0 text-center text-white bg-black bg-opacity-50 p-2">
+        Touch to explore the Sun Temple in 3D
+      </div>
+    </div>
+  );
+}
 class AudioManager {
   constructor() {
     this.sounds = {};
@@ -105,7 +296,6 @@ class AudioManager {
   }
 
   playAmbient(type) {
-    // Simulate ambient sounds (in real implementation, you'd load actual audio files)
     if (this.enabled) {
       console.log(`Playing ambient: ${type}`);
     }
@@ -127,11 +317,8 @@ class AudioManager {
     return this.enabled;
   }
 }
-
-// Weather and Time System (ORIGINAL CODE)
-// Pure state hook
 function useTimeOfDay() {
-  const [timeOfDay, setTimeOfDay] = useState(0.6); // 0 = night, 1 = day
+  const [timeOfDay, setTimeOfDay] = useState(0.6);
   const [weather, setWeather] = useState('clear');
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -140,19 +327,15 @@ function useTimeOfDay() {
   return { timeOfDay, setTimeOfDay, weather, setWeather, cycleTime, isPlaying };
 }
 
-
-// Component to update time using useFrame (ORIGINAL CODE)
 function TimeOfDayUpdater({ timeOfDay, setTimeOfDay, isPlaying }) {
   useFrame((state, delta) => {
     if (isPlaying) {
-      setTimeOfDay(prev => (prev + delta * 0.05) % 1); // 20 second cycle
+      setTimeOfDay(prev => (prev + delta * 0.05) % 1);
     }
   });
   return null;
 }
 
-
-// Particle System Component (ORIGINAL CODE)
 function Particles({ type, count = 100 }) {
   const mesh = useRef();
   const particles = useMemo(() => {
@@ -172,10 +355,8 @@ function Particles({ type, count = 100 }) {
       particles.forEach((particle, i) => {
         const i3 = i * 3;
         if (type === 'dust') {
-          // Floating dust motes
           mesh.current.geometry.attributes.position.array[i3 + 1] += Math.sin(state.clock.elapsedTime + particle.offset) * 0.001;
         } else if (type === 'fireflies') {
-          // Fireflies floating around
           mesh.current.geometry.attributes.position.array[i3] += Math.sin(state.clock.elapsedTime * 0.5 + particle.offset) * 0.02;
           mesh.current.geometry.attributes.position.array[i3 + 1] += Math.cos(state.clock.elapsedTime * 0.3 + particle.offset) * 0.01;
         }
@@ -204,7 +385,6 @@ function Particles({ type, count = 100 }) {
   );
 }
 
-// Animated Wildlife (ORIGINAL CODE)
 function Birds() {
   const groupRef = useRef();
   const birds = useMemo(() => {
@@ -248,8 +428,6 @@ function Birds() {
     </group>
   );
 }
-
-// Enhanced Environment with dynamic lighting (ORIGINAL CODE)
 function EnhancedEnvironment({ timeOfDay, weather }) {
   const sunPosition = useMemo(() => {
     const angle = timeOfDay * Math.PI * 2;
@@ -263,22 +441,19 @@ function EnhancedEnvironment({ timeOfDay, weather }) {
   const sunColor = useMemo(() => {
     const color = new Color();
     if (timeOfDay < 0.2 || timeOfDay > 0.8) {
-      // Night/twilight
       color.setHSL(0.6, 0.8, 0.3);
     } else if (timeOfDay < 0.3 || timeOfDay > 0.7) {
-      // Dawn/dusk
       color.setHSL(0.08, 0.9, 0.6);
     } else {
-      // Day
       color.setHSL(0.15, 0.1, 1);
     }
     return color;
   }, [timeOfDay]);
 
   const intensity = useMemo(() => {
-    if (timeOfDay < 0.2 || timeOfDay > 0.8) return 0.2; // Night
-    if (timeOfDay < 0.3 || timeOfDay > 0.7) return 0.6; // Dawn/dusk
-    return 1.2; // Day
+    if (timeOfDay < 0.2 || timeOfDay > 0.8) return 0.2;
+    if (timeOfDay < 0.3 || timeOfDay > 0.7) return 0.6;
+    return 1.2;
   }, [timeOfDay]);
 
   return (
@@ -323,8 +498,6 @@ function EnhancedEnvironment({ timeOfDay, weather }) {
     </>
   );
 }
-
-// Collision detection system (ORIGINAL CODE - unchanged)
 class CollisionDetector {
   constructor() {
     this.raycaster = new Raycaster();
@@ -414,8 +587,6 @@ class CollisionDetector {
     };
   }
 }
-
-// Enhanced First-person controls with footstep audio (ORIGINAL CODE)
 function FirstPersonControls({ speed = 5, collisionDetector, audioManager, onMove }) {
   const { camera, gl } = useThree();
   const moveForward = useRef(false);
@@ -541,8 +712,7 @@ function FirstPersonControls({ speed = 5, collisionDetector, audioManager, onMov
           camera.position.copy(collisionResult.adjustedPosition);
           onMove && onMove(camera.position);
           
-          // Play footstep sounds
-          if (time - lastFootstep.current > 500) { // Every 500ms
+          if (time - lastFootstep.current > 500) {
             audioManager.playEffect('footstep', camera.position);
             lastFootstep.current = time;
           }
@@ -564,8 +734,6 @@ function FirstPersonControls({ speed = 5, collisionDetector, audioManager, onMov
 
   return null;
 }
-
-// Temple model with enhanced materials (ORIGINAL CODE)
 function TempleModel({ collisionDetector }) {
   const { scene } = useGLTF('/models/suntemple_base_basic_shaded.glb');
   
@@ -573,14 +741,12 @@ function TempleModel({ collisionDetector }) {
     if (collisionDetector && scene) {
       collisionDetector.addCollisionObject(scene);
       
-      // Enhanced materials
       scene.traverse((child) => {
         if (child instanceof Mesh) {
           child.castShadow = true;
           child.receiveShadow = true;
           
           if (child.material) {
-            // Enhance existing materials
             child.material.metalness = 0.1;
             child.material.roughness = 0.8;
           }
@@ -591,8 +757,6 @@ function TempleModel({ collisionDetector }) {
 
   return <primitive object={scene} scale={0.8} />;
 }
-
-// Enhanced ground with better textures (ORIGINAL CODE)
 function Ground({ collisionDetector }) {
   const groundRef = useRef();
   const grassTexture = useTexture('/textures/green3.jpg');
@@ -621,7 +785,6 @@ function Ground({ collisionDetector }) {
         />
       </mesh>
       
-      {/* Add some simple geometry for visual interest */}
       <mesh position={[8, 0.5, 8]} castShadow receiveShadow>
         <boxGeometry args={[1, 1, 1]} />
         <meshStandardMaterial color="#8B4513" roughness={0.9} />
@@ -634,8 +797,6 @@ function Ground({ collisionDetector }) {
     </group>
   );
 }
-
-// Settings Panel (ORIGINAL CODE)
 function SettingsPanel({ 
   audioManager, 
   timeOfDay, 
@@ -722,10 +883,8 @@ function SettingsPanel({
     </>
   );
 }
-
-// Desktop 3D Experience Component (ALL ORIGINAL CODE)
 function Desktop3DExperience() {
-  const [infoText, setInfoText] = useState('🏛️ Enhanced Temple Explorer - Click to enter immersive mode');
+  const [infoText, setInfoText] = useState('Enhanced Temple Explorer - Click to enter immersive mode');
   const [showInstructions, setShowInstructions] = useState(true);
   const [photoMode, setPhotoMode] = useState(false);
   const [showParticles, setShowParticles] = useState(true);
@@ -740,7 +899,6 @@ function Desktop3DExperience() {
   const { timeOfDay, setTimeOfDay, weather, setWeather, cycleTime, isPlaying } = useTimeOfDay();
 
   const handlePlayerMove = (position) => {
-    // Play ambient sounds based on location
     const distanceFromTemple = position.distanceTo(new Vector3(0, 0, 0));
     if (distanceFromTemple < 5) {
       audioManager.playAmbient('temple_interior');
@@ -752,17 +910,15 @@ function Desktop3DExperience() {
   const handlePhotoMode = () => {
     setPhotoMode(true);
     setTimeout(() => {
-      // Simulate photo capture
-      setInfoText('📸 Photo captured! Check your downloads folder');
+      setInfoText('Photo captured! Check your downloads folder');
       setTimeout(() => {
-        setInfoText('🏛️ Enhanced Temple Explorer - Explore the ancient temple');
+        setInfoText('Enhanced Temple Explorer - Explore the ancient temple');
         setPhotoMode(false);
       }, 2000);
     }, 500);
   };
 
   useEffect(() => {
-    // Initialize ambient sounds
     audioManager.playAmbient('outdoor');
   }, [audioManager]);
 
@@ -773,17 +929,12 @@ function Desktop3DExperience() {
         camera={{ position: [0, 1.6, 8], fov: 75 }}
         gl={{ antialias: true, alpha: true }}
       >
-        {/* Enhanced Environment */}
         <EnhancedEnvironment timeOfDay={timeOfDay} weather={weather} />
-        
-        {/* Fog for atmosphere */}
         <fog attach="fog" args={['#87CEEB', 20, 100]} />
         
-        {/* Models */}
         <TempleModel collisionDetector={collisionDetector} />
         <Ground collisionDetector={collisionDetector} />
         
-        {/* Particle Effects */}
         {showParticles && (
           <>
             <Particles type="dust" count={50} />
@@ -793,10 +944,8 @@ function Desktop3DExperience() {
           </>
         )}
         
-        {/* Wildlife */}
         <Birds />
         
-        {/* Enhanced Controls */}
         <FirstPersonControls 
           speed={7} 
           collisionDetector={collisionDetector}
@@ -811,7 +960,6 @@ function Desktop3DExperience() {
         />
       </Canvas>
       
-      {/* Settings Panel */}
       <SettingsPanel
         audioManager={audioManager}
         timeOfDay={timeOfDay}
@@ -824,7 +972,6 @@ function Desktop3DExperience() {
         setShowParticles={setShowParticles}
       />
       
-      {/* Time of day indicator */}
       <div className="absolute top-4 left-4 text-white bg-black bg-opacity-50 p-2 rounded">
         <div className="flex items-center gap-2">
           {timeOfDay < 0.3 || timeOfDay > 0.7 ? <Moon size={16} /> : <Sun size={16} />}
@@ -835,13 +982,11 @@ function Desktop3DExperience() {
         </div>
       </div>
       
-      {/* Photo mode overlay */}
       {photoMode && (
         <div className="absolute inset-0 bg-white pointer-events-none animate-pulse" 
              style={{ animationDuration: '0.1s', animationIterationCount: '1' }} />
       )}
       
-      {/* UI Overlay */}
       <div className="absolute bottom-4 left-0 right-0 text-center text-white bg-black bg-opacity-50 p-2">
         {infoText}
       </div>
@@ -849,7 +994,7 @@ function Desktop3DExperience() {
       {showInstructions && (
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-80">
           <div className="text-center text-white bg-black bg-opacity-90 p-8 max-w-lg mx-auto rounded-lg border border-gold">
-            <h2 className="text-2xl font-bold mb-4 text-yellow-400">🏛️ Enhanced Temple Explorer</h2>
+            <h2 className="text-2xl font-bold mb-4 text-yellow-400">Enhanced Temple Explorer</h2>
             
             <div className="grid grid-cols-2 gap-4 mb-6 text-left">
               <div>
@@ -862,16 +1007,16 @@ function Desktop3DExperience() {
               </div>
               <div>
                 <h3 className="font-semibold mb-2 text-green-300">Features</h3>
-                <p className="text-sm">⚙️ Settings panel</p>
-                <p className="text-sm">📸 Photo mode</p>
-                <p className="text-sm">🌅 Day/night cycle</p>
-                <p className="text-sm">🦋 Particle effects</p>
-                <p className="text-sm">🔊 Spatial audio</p>
+                <p className="text-sm">Settings panel</p>
+                <p className="text-sm">Photo mode</p>
+                <p className="text-sm">Day/night cycle</p>
+                <p className="text-sm">Particle effects</p>
+                <p className="text-sm">Spatial audio</p>
               </div>
             </div>
             
             <div className="mb-6">
-              <h3 className="font-semibold mb-2 text-yellow-300">✨ New Enhancements</h3>
+              <h3 className="font-semibold mb-2 text-yellow-300">New Enhancements</h3>
               <div className="text-sm grid grid-cols-2 gap-2">
                 <p>• Dynamic lighting system</p>
                 <p>• Weather variations</p>
@@ -892,7 +1037,7 @@ function Desktop3DExperience() {
               className="px-6 py-3 bg-gradient-to-r from-yellow-600 to-yellow-800 text-white rounded-lg font-semibold hover:from-yellow-500 hover:to-yellow-700 transition-all transform hover:scale-105"
               onClick={() => setShowInstructions(false)}
             >
-              Enter Temple 🚶‍♂️
+              Enter Temple
             </button>
           </div>
         </div>
@@ -900,37 +1045,71 @@ function Desktop3DExperience() {
     </div>
   );
 }
-
-// Main component with device detection
 export default function SunTemple() {
   const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [isAndroidDevice, setIsAndroidDevice] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [arSupported, setArSupported] = useState(false);
+  const [hasGyroscopeSupport, setHasGyroscopeSupport] = useState(false);
 
   useEffect(() => {
-    // Device detection on client side
-    setIsMobileDevice(isMobile());
-    setIsAndroidDevice(isAndroid());
-    setIsLoading(false);
+    const detectCapabilities = async () => {
+      const mobile = isMobile();
+      const android = isAndroid();
+      
+      setIsMobileDevice(mobile);
+      setIsAndroidDevice(android);
+      
+      if (mobile) {
+        const arSupport = await supportsAR();
+        setArSupported(arSupport);
+      
+        const gyroSupport = hasGyroscope();
+        setHasGyroscopeSupport(gyroSupport);
+        
+        console.log('Device capabilities:', {
+          mobile,
+          android,
+          arSupport,
+          gyroSupport
+        });
+      }
+      
+      setIsLoading(false);
+    };
+
+    detectCapabilities();
   }, []);
 
-  // Show loading while detecting device
   if (isLoading) {
     return (
       <div className="w-full h-screen flex items-center justify-center bg-gradient-to-b from-sky-400 to-sky-200">
         <div className="text-center text-white">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
           <p className="text-xl">Loading Sun Temple Experience...</p>
+          <p className="text-sm mt-2">Detecting device capabilities...</p>
         </div>
       </div>
     );
   }
 
-  // Show AR view for Android devices
-  if (isMobileDevice && isAndroidDevice) {
-    return <ARView />;
+  if (!isMobileDevice) {
+    return <Desktop3DExperience />;
   }
 
-  // Show full desktop 3D experience for all other devices (desktop, iOS, etc.)
+  if (isMobileDevice) {
+    if (arSupported) {
+      return <ARView />;
+    }
+    
+    if (hasGyroscopeSupport) {
+      return <GyroscopeView />;
+    }
+    
+    // Basic fallback: Simple 3D viewer
+    return <Mobile3DViewer />;
+  }
+
+  // Fallback for any edge cases
   return <Desktop3DExperience />;
 }

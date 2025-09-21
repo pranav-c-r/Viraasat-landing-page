@@ -3,7 +3,11 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
-import SanchiStupa from '../components/3dmodels/SanchiStupa';
+import dynamic from 'next/dynamic';
+
+const SanchiStupa = dynamic(() => import('../components/3dmodels/SanchiStupa'), {
+  ssr: false
+});
 
 export default function SanchiStupaPage() {
   return (
