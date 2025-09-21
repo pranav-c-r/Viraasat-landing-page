@@ -71,6 +71,8 @@ export default function TajMahalPage() {
                   Built using white marble that appears to change color throughout the day, the Taj Mahal combines elements from Islamic, 
                   Persian, Ottoman Turkish and Indian architectural styles.
                 </p>
+                <p>The entire dome was built with a scaffolding made not of steel, but of Bamboo. It was an immense, intricate web that held the workers and materials. Historians are still amazed by this engineering feat.
+                </p>
               </div>
             </div>
             

@@ -80,8 +80,8 @@ export default function SunTemplePage() {
               <h3 className="text-3xl font-bold text-text-primary">Architectural Features</h3>
               <div className="space-y-4">
                 <div className="bg-surface/30 rounded-xl p-6 backdrop-blur-sm border border-borders/20">
-                  <h4 className="text-xl font-semibold text-text-primary mb-2">Chariot Wheels</h4>
-                  <p className="text-text-secondary">24 intricately carved stone wheels, each about 10 feet in diameter</p>
+                  <h4 className="text-xl font-semibold text-text-primary mb-2">24 Chariot Wheels</h4>
+                  <p className="text-text-secondary">24 intricately carved stone wheels, representing the 24 fortnights of the Hindu year. Each is intricately detailed with carvings and can even be used as a sundial to tell the time.</p>
                 </div>
                 <div className="bg-surface/30 rounded-xl p-6 backdrop-blur-sm border border-borders/20">
                   <h4 className="text-xl font-semibold text-text-primary mb-2">Seven Horses</h4>

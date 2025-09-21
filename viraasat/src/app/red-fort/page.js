@@ -68,8 +68,8 @@ export default function RedFortPage() {
                   This impressive fortress was the main residence of Mughal emperors for nearly 200 years.
                 </p>
                 <p>
-                  It is most famous as the location where India&apos;s first Prime Minister, Jawaharlal Nehru, 
-                  hoisted the national flag on August 15, 1947, marking India&apos;s independence from British rule.
+                  It is most famous as the location where India's first Prime Minister, Jawaharlal Nehru, 
+                  hoisted the national flag on August 15, 1947, marking India's independence from British rule.
                 </p>
               </div>
             </div>
@@ -79,15 +79,15 @@ export default function RedFortPage() {
               <div className="space-y-4">
                 <div className="bg-surface/30 rounded-xl p-6 backdrop-blur-sm border border-borders/20">
                   <h4 className="text-xl font-semibold text-text-primary mb-2">Red Sandstone Walls</h4>
-                  <p className="text-text-secondary">The massive walls give the fort its distinctive color and grandeur</p>
+                  <p className="text-text-secondary"> The main palaces inside were built from brilliant, shining white marble. The red sandstone was for the outer walls. The name comes from the overwhelming red exterior.</p>
                 </div>
                 <div className="bg-surface/30 rounded-xl p-6 backdrop-blur-sm border border-borders/20">
-                  <h4 className="text-xl font-semibold text-text-primary mb-2">Diwan-i-Aam</h4>
-                  <p className="text-text-secondary">The Hall of Public Audience where the emperor met common citizens</p>
+                  <h4 className="text-xl font-semibold text-text-primary mb-2">Cooling effect</h4>
+                  <p className="text-text-secondary"> The beautiful stream of water that once flowed through the palace chambers (like in Nahr-i-Bihisht) wasn't just for decoration. It was a primitive air-cooling system, channeling water from the Yamuna River to cool the marble rooms during scorching Delhi summers.</p>
                 </div>
                 <div className="bg-surface/30 rounded-xl p-6 backdrop-blur-sm border border-borders/20">
-                  <h4 className="text-xl font-semibold text-text-primary mb-2">Diwan-i-Khas</h4>
-                  <p className="text-text-secondary">The Hall of Private Audience, formerly home to the Peacock Throne</p>
+                  <h4 className="text-xl font-semibold text-text-primary mb-2">SoundProof Walls</h4>
+                  <p className="text-text-secondary">The fort's massive walls, up to 110 feet high in places, were designed for defense.They acted as a sound barrier, keeping the noise of the bustling city outside from disturbing the peace of the royal palace inside.</p>
                 </div>
               </div>
             </div>

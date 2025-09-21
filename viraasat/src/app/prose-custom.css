@@ -1,0 +1,22 @@
+/* Custom style for <p> inside .prose.prose-lg.text-text-secondary.space-y-4 */
+.prose.prose-lg.text-text-secondary.space-y-4 p,
+p.text-text-secondary, .text-text-secondary {
+  color: #341f01 !important; /* Rich bronze-brown shade */
+  font-weight: bold !important;
+}
+
+/* Optional: dark mode variant if needed */
+.dark .prose.prose-lg.text-text-secondary.space-y-4 p,
+.dark p.text-text-secondary {
+  color: #3f2503 !important; /* Slightly lighter bronze for dark bg */
+  font-weight: bold !important;
+}
+
+#infinite-grid-menu-canvas {
+  background-color: #4F200D !important;
+  color: #E6CFA9 !important;
+}
+
+#infinite-grid-menu-canvas * {
+  color: #E6CFA9 !important;
+}
