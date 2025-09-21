@@ -1,234 +1,244 @@
 'use client';
 
-import { motion, useInView } from 'framer-motion';
-import { useRef, useState } from 'react';
-import Particles from './Particles';
-import { AnimatePresence } from 'framer-motion'; // Import from framer-motion instead of redefining
+import { motion, useInView, useMotionValue, useTransform } from 'framer-motion';
+import { useRef, useState, useEffect } from 'react';
 
-// Cultural pattern background component
-const CulturalPatternBg = () => {
+const SpotlightCard = ({ children, className = '', spotlightColor = 'rgba(255, 255, 255, 0.25)', style = {} }) => {
+  const divRef = useRef(null);
+  const [isFocused, setIsFocused] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [opacity, setOpacity] = useState(0);
+
+  const handleMouseMove = e => {
+    if (!divRef.current || isFocused) return;
+    const rect = divRef.current.getBoundingClientRect();
+    setPosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
+
+  const handleFocus = () => {
+    setIsFocused(true);
+    setOpacity(0.6);
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    setOpacity(0);
+  };
+
+  const handleMouseEnter = () => {
+    setOpacity(0.6);
+  };
+
+  const handleMouseLeave = () => {
+    setOpacity(0);
+  };
+
   return (
-    <div className="absolute inset-0 overflow-hidden opacity-5 pointer-events-none">
-      <svg width="100%" height="100%" className="absolute inset-0">
-        <pattern id="about-pattern" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
-          <path d="M0,0 L80,80 M80,0 L0,80" stroke="currentColor" strokeWidth="1"/>
-          <circle cx="40" cy="40" r="15" fill="none" stroke="currentColor" strokeWidth="1.5"/>
-          <rect x="20" y="20" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1"/>
-        </pattern>
-        <rect x="0" y="0" width="100%" height="100%" fill="url(#about-pattern)" />
-      </svg>
+    <div
+      ref={divRef}
+      onMouseMove={handleMouseMove}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className={`relative rounded-3xl border border-neutral-800 overflow-hidden p-8 ${className}`}
+      style={style}
+    >
+      <div
+        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 ease-in-out"
+        style={{
+          opacity,
+          background: `radial-gradient(circle at ${position.x}px ${position.y}px, ${spotlightColor}, transparent 80%)`
+        }}
+      />
+      {children}
     </div>
   );
 };
 
-// Animated decorative element
-const CulturalOrnament = ({ className, delay = 0 }) => {
-  return (
-    <motion.div 
-      className={className}
-      initial={{ scale: 0, opacity: 0 }}
-      whileInView={{ scale: 1, opacity: 1 }}
-      viewport={{ once: true, margin: "-20%" }}
-      transition={{ delay, duration: 0.7, type: "spring" }}
-    >
-      <svg viewBox="0 0 100 100" className="w-full h-full">
-        <path 
-          d="M50,10 A40,40 0 1,1 50,90 A40,40 0 1,1 50,10 Z" 
-          fill="none" 
-          stroke="currentColor" 
-          strokeWidth="2"
-          strokeDasharray="5,5"
-        />
-        <path 
-          d="M30,30 L70,30 L70,70 L30,70 Z" 
-          fill="none" 
-          stroke="currentColor" 
-          strokeWidth="1.5"
-        />
-        <circle cx="50" cy="50" r="15" fill="none" stroke="currentColor" strokeWidth="1"/>
-      </svg>
-    </motion.div>
-  );
-};
-
-// Animated video placeholder with play button
-const MissionVideo = () => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  
-  const handlePlay = () => {
-    setIsPlaying(true);
-    setTimeout(() => setIsPlaying(false), 5000); // Simulate video ending
-  };
+// Heritage Monument Interactive Component
+const HeritageMonument = ({ monument, delay = 0, onHover }) => {
+  const [isHovered, setIsHovered] = useState(false);
   
   return (
-    <motion.div 
-      className="bg-background p-8 rounded-2xl border border-white/10 backdrop-blur-sm relative overflow-hidden group"
-      initial={{ opacity: 0, scale: 0.9 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      viewport={{ once: true, margin: "-10%" }}
-      transition={{ duration: 0.7, delay: 0.4 }}
-      whileHover={{ 
-        boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
-        transition: { duration: 0.3 }
+    <motion.div
+      className="relative group cursor-pointer"
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay, duration: 0.8, type: "spring" }}
+      onHoverStart={() => {
+        setIsHovered(true);
+        onHover?.(monument);
       }}
+      onHoverEnd={() => setIsHovered(false)}
     >
-      {/* Cultural pattern overlay */}
-      <div className="absolute inset-0 opacity-5 pointer-events-none">
-        <svg width="100%" height="100%" className="absolute inset-0">
-          <pattern id="video-pattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-            <circle cx="10" cy="10" r="3" fill="none" stroke="currentColor" strokeWidth="1"/>
-            <circle cx="30" cy="30" r="3" fill="none" stroke="currentColor" strokeWidth="1"/>
-          </pattern>
-          <rect x="0" y="0" width="100%" height="100%" fill="url(#video-pattern)" />
-        </svg>
-      </div>
-      
-      <div className="aspect-square bg-borders/20 rounded-lg flex items-center justify-center relative overflow-hidden">
-        <AnimatePresence>
-          {!isPlaying ? (
-            <motion.div 
-              className="absolute inset-0 flex items-center justify-center cursor-pointer"
-              initial={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              onClick={handlePlay}
-            >
-              <motion.div
-                className="w-24 h-24 bg-primary/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/20"
-                whileHover={{ scale: 1.1, backgroundColor: "rgba(139, 90, 43, 0.3)" }}
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-              >
-                <motion.div
-                  className="w-16 h-16 bg-primary rounded-full flex items-center justify-center"
-                  whileHover={{ scale: 1.1 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                >
-                  <svg className="w-8 h-8 text-background" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </motion.div>
-              </motion.div>
-            </motion.div>
-          ) : (
-            <motion.div 
-              className="absolute inset-0 bg-primary/5 flex items-center justify-center"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <motion.div
-                initial={{ scale: 0.8 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="text-primary text-lg font-semibold"
-              >
-                Experience in AR
-              </motion.div>
-              
-              {/* Animated scanning effect */}
-              <motion.div 
-                className="absolute top-0 left-0 w-full h-1 bg-primary"
-                initial={{ y: 0 }}
-                animate={{ y: '100%' }}
-                transition={{ 
-                  repeat: Infinity, 
-                  repeatType: 'loop', 
-                  duration: 3, 
-                  ease: 'easeInOut' 
-                }}
-                style={{ boxShadow: '0 0 10px 2px rgba(139, 90, 43, 0.5)' }}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
-        <motion.span 
-          className="text-text-secondary"
-          animate={{ opacity: isPlaying ? 0.3 : 1 }}
+      <SpotlightCard
+        className="bg-[#CEB392] backdrop-blur-sm border border-gray-200 h-32 w-32 flex items-center justify-center transform transition-all duration-300"
+        spotlightColor="rgba(255, 165, 0, 0.7)"
+      >
+        <motion.div
+          className="text-4xl transform transition-all duration-300"
+          animate={{ 
+            scale: isHovered ? 1.2 : 1,
+            rotate: isHovered ? 360 : 0
+          }}
         >
-          Mission Video/Animation
-        </motion.span>
-      </div>
+          {monument.icon}
+        </motion.div>
+        
+        <motion.div
+          className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-primary text-background px-3 py-1 rounded-full text-xs font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300"
+          initial={{ y: 10 }}
+          animate={{ y: isHovered ? 0 : 10 }}
+        >
+          {monument.name}
+        </motion.div>
+      </SpotlightCard>
     </motion.div>
   );
 };
 
-// Text content with staggered animation
-const AboutContent = () => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-10%" });
-  
+// Interactive Timeline Component
+const ProcessTimeline = () => {
+  const [activeStep, setActiveStep] = useState(0);
+  const steps = [
+    {
+      icon: "📸",
+      title: "Digitize",
+      description: "Create lightweight 3D models using photogrammetry and handcrafted modeling",
+      color: "rgba(255, 255, 0, 0.7)"
+    },
+    {
+      icon: "⚡",
+      title: "Optimize", 
+      description: "Smart compression ensures smooth performance under 10MB per preview",
+      color: "rgba(255, 0, 0, 0.7)"
+    },
+    {
+      icon: "📱",
+      title: "Experience Offline",
+      description: "Progressive downloads and local caching work anywhere—even with patchy connectivity",
+      color: "rgba(255, 165, 0, 0.7)"
+    },
+    {
+      icon: "🎙️",
+      title: "Storytelling First",
+      description: "Multilingual narratives woven into each AR experience",
+      color: "rgba(255, 255, 0, 0.7)"
+    }
+  ];
+
   return (
-    <motion.div 
-      ref={ref}
-      initial={{ opacity: 0, x: -30 }}
-      animate={isInView ? { opacity: 1, x: 0 } : {}}
-      transition={{ duration: 0.7 }}
-    >
-      <motion.h3 
-        className="text-2xl font-bold text-text-primary mb-4"
-        initial={{ opacity: 0 }}
-        animate={isInView ? { opacity: 1 } : {}}
-        transition={{ duration: 0.5, delay: 0.2 }}
-      >
-        The Challenge
-      </motion.h3>
-      
-      <motion.p 
-        className="text-text-secondary mb-6"
-        initial={{ opacity: 0 }}
-        animate={isInView ? { opacity: 1 } : {}}
-        transition={{ duration: 0.5, delay: 0.3 }}
-      >
-        Historical sites are deteriorating, stories are being forgotten, and access 
-        to cultural heritage is limited by geography, time, and resources.
-      </motion.p>
-      
-      <motion.h3 
-        className="text-2xl font-bold text-text-primary mb-4"
-        initial={{ opacity: 0 }}
-        animate={isInView ? { opacity: 1 } : {}}
-        transition={{ duration: 0.5, delay: 0.4 }}
-      >
-        Our Solution
-      </motion.h3>
-      
-      <motion.p 
-        className="text-text-secondary"
-        initial={{ opacity: 0 }}
-        animate={isInView ? { opacity: 1 } : {}}
-        transition={{ duration: 0.5, delay: 0.5 }}
-      >
-        Viraasat uses cutting-edge AR technology to bring history to life, creating 
-        immersive experiences that preserve and share cultural heritage with future generations.
-      </motion.p>
-      
-      {/* Animated stats */}
-      <motion.div 
-        className="grid grid-cols-3 gap-4 mt-8"
-        initial={{ opacity: 0 }}
-        animate={isInView ? { opacity: 1 } : {}}
-        transition={{ duration: 0.5, delay: 0.7 }}
-      >
-        {[
-          { number: "50+", label: "Heritage Sites" },
-          { number: "100K+", label: "Users" },
-          { number: "15+", label: "Languages" }
-        ].map((stat, index) => (
-          <motion.div 
-            key={index}
-            className="text-center p-4 bg-background/50 rounded-lg border border-white/10"
-            initial={{ scale: 0 }}
-            animate={isInView ? { scale: 1 } : {}}
-            transition={{ type: "spring", delay: 0.8 + index * 0.1 }}
-            whileHover={{ scale: 1.05, y: -5 }}
+    <div className="space-y-6">
+      {steps.map((step, index) => (
+        <motion.div
+          key={index}
+          className="relative"
+          onHoverStart={() => setActiveStep(index)}
+          initial={{ opacity: 0, x: -30 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: index * 0.2, duration: 0.6 }}
+        >
+          <SpotlightCard
+            className={`bg-[#CEB392] backdrop-blur-sm border border-gray-200 p-6 transform transition-all duration-500 ${
+              activeStep === index ? 'scale-105 shadow-2xl' : 'scale-100'
+            }`}
+            spotlightColor={step.color}
           >
-            <div className="text-2xl font-bold text-primary">{stat.number}</div>
-            <div className="text-sm text-text-secondary">{stat.label}</div>
-          </motion.div>
-        ))}
-      </motion.div>
+            <div className="flex items-start gap-4">
+              <motion.div
+                className="text-3xl"
+                animate={{ 
+                  scale: activeStep === index ? 1.2 : 1,
+                  rotate: activeStep === index ? 360 : 0
+                }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                {step.icon}
+              </motion.div>
+              <div className="flex-1">
+                <h4 className="text-xl font-bold text-text-primary mb-2">{step.title}</h4>
+                <p className="text-text-secondary">{step.description}</p>
+              </div>
+            </div>
+          </SpotlightCard>
+        </motion.div>
+      ))}
+    </div>
+  );
+};
+
+// Interactive Stats Counter
+const StatCounter = ({ end, label, duration = 2, delay = 0 }) => {
+  const [count, setCount] = useState(0);
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true });
+
+  useEffect(() => {
+    if (isInView) {
+      const timer = setTimeout(() => {
+        const increment = end / (duration * 60);
+        const counter = setInterval(() => {
+          setCount(prev => {
+            const next = prev + increment;
+            if (next >= end) {
+              clearInterval(counter);
+              return end;
+            }
+            return next;
+          });
+        }, 1000 / 60);
+      }, delay * 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isInView, end, duration, delay]);
+
+  return (
+    <div ref={ref} className="text-center">
+      <div className="text-3xl font-bold text-primary">
+        {Math.floor(count)}{label.includes('+') ? '+' : ''}
+      </div>
+      <div className="text-sm text-text-secondary mt-1">{label}</div>
+    </div>
+  );
+};
+
+// Mouse Follower Component
+const MouseFollower = () => {
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+      setIsVisible(true);
+    };
+
+    const handleMouseLeave = () => setIsVisible(false);
+
+    window.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, []);
+
+  return (
+    <motion.div
+      className="fixed w-6 h-6 pointer-events-none z-50 mix-blend-difference"
+      animate={{
+        x: mousePosition.x - 12,
+        y: mousePosition.y - 12,
+        opacity: isVisible ? 1 : 0
+      }}
+      transition={{ type: "spring", damping: 20, stiffness: 300 }}
+    >
+      <div className="w-full h-full bg-primary rounded-full" />
     </motion.div>
   );
 };
@@ -236,75 +246,293 @@ const AboutContent = () => {
 export default function About() {
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-10%" });
+  const [selectedMonument, setSelectedMonument] = useState(null);
+  
+  const monuments = [
+    { icon: "🏛️", name: "Red Fort" },
+    { icon: "🕌", name: "Taj Mahal" },
+    { icon: "⛩️", name: "Gateway of India" },
+    { icon: "🏰", name: "Mysore Palace" },
+    { icon: "🗿", name: "Ajanta Caves" }
+  ];
+
+  const userGroups = [
+    {
+      icon: "🧳",
+      title: "Tourists",
+      description: "Richer experiences on-site and off-site",
+      color: "rgba(255, 255, 0, 0.7)"
+    },
+    {
+      icon: "🎓", 
+      title: "Students & Teachers",
+      description: "Engaging cultural learning experiences",
+      color: "rgba(255, 0, 0, 0.7)"
+    },
+    {
+      icon: "📚",
+      title: "Local Storytellers",
+      description: "Platform for authentic narratives",
+      color: "rgba(255, 165, 0, 0.7)"
+    },
+    {
+      icon: "🏛️",
+      title: "Institutions",
+      description: "Tourism boards keeping heritage alive",
+      color: "rgba(255, 255, 0, 0.7)"
+    }
+  ];
 
   return (
-    <section ref={sectionRef} className="py-20 bg-surface relative overflow-hidden">
-      {/* Particles Background */}
-      <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-        <Particles
-          particleColors={['#940000', '#940000', '#940000']}
-          particleCount={200}
-          particleSpread={10}
-          speed={0.1}
-          particleBaseSize={100}
-          moveParticlesOnHover={false}
-          alphaParticles={false}
-          disableRotation={false}
-        />
+    <section ref={sectionRef} className="py-28 bg-surface relative overflow-hidden">
+      <MouseFollower />
+      
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-20 left-10 w-64 h-64 bg-amber-200 rounded-full mix-blend-multiply filter blur-xl animate-pulse-slow animate-float"></div>
+        <div className="absolute top-1/2 right-20 w-80 h-80 bg-rose-200 rounded-full mix-blend-multiply filter blur-xl animate-pulse-slow animate-float animation-delay-2000"></div>
+        <div className="absolute bottom-20 left-1/3 w-72 h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-xl animate-pulse-slow animate-float animation-delay-4000"></div>
       </div>
 
-      {/* Cultural pattern background */}
-      <CulturalPatternBg />
-      
-      {/* Cultural decorative elements */}
-      <CulturalOrnament className="absolute top-10 left-5 w-20 h-20 text-primary/10" delay={0.2} />
-      <CulturalOrnament className="absolute bottom-10 right-5 w-16 h-16 text-primary/10" delay={0.4} />
-      <CulturalOrnament className="absolute top-20 right-10 w-12 h-12 text-primary/10" delay={0.3} />
-      <CulturalOrnament className="absolute bottom-20 left-10 w-14 h-14 text-primary/10" delay={0.5} />
-      
-      <div className="max-w-6xl mx-auto px-6 relative z-10">
+      {/* Cultural Pattern Overlay */}
+      <div className="absolute inset-0 opacity-10">
+        <svg width="100%" height="100%" className="absolute inset-0">
+          <pattern id="heritage-pattern" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+            <path d="M0,0 L100,100 M100,0 L0,100" stroke="currentColor" strokeWidth="0.5" className="text-primary"/>
+            <circle cx="50" cy="50" r="20" fill="none" stroke="currentColor" strokeWidth="1" className="text-primary"/>
+          </pattern>
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#heritage-pattern)" />
+        </svg>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        {/* Hero Statement */}
         <motion.div 
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: 30 }}
+          className="text-center mb-20"
+          initial={{ opacity: 0, y: 50 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7 }}
+          transition={{ duration: 0.8 }}
         >
-          <motion.h2 
-            className="text-4xl md:text-5xl font-bold text-text-primary mb-6"
-            initial={{ opacity: 0 }}
-            animate={isInView ? { opacity: 1 } : {}}
-            transition={{ duration: 0.7, delay: 0.2 }}
+          <motion.h1 
+            className="text-5xl md:text-7xl font-bold text-text-primary mb-8 leading-tight"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={isInView ? { opacity: 1, scale: 1 } : {}}
+            transition={{ duration: 0.8, delay: 0.2 }}
           >
-            About Viraasat
-          </motion.h2>
+            We Reimagine India's{" "}
+            <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 bg-clip-text text-transparent">
+              Monuments
+            </span>
+          </motion.h1>
           
           <motion.p 
-            className="text-xl text-text-secondary max-w-3xl mx-auto"
+            className="text-2xl md:text-3xl text-text-secondary max-w-4xl mx-auto font-light"
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : {}}
-            transition={{ duration: 0.7, delay: 0.4 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
           >
-            Our mission is to digitize and preserve cultural heritage, making it accessible 
-            to everyone through immersive AR technology.
+            Through augmented reality—making history immersive, accessible, and unforgettable.
           </motion.p>
+
+          {/* Interactive Heritage Icons */}
+          <motion.div 
+            className="flex justify-center gap-6 mt-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.6 }}
+          >
+            {monuments.map((monument, index) => (
+              <HeritageMonument
+                key={index}
+                monument={monument}
+                delay={0.8 + index * 0.1}
+                onHover={setSelectedMonument}
+              />
+            ))}
+          </motion.div>
         </motion.div>
-        
+
+        {/* Problem & Solution Grid */}
+        <div className="grid lg:grid-cols-2 gap-16 mb-20">
+          {/* The Problem */}
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <SpotlightCard
+              className="bg-[#CEB392] backdrop-blur-sm border border-gray-200 h-full"
+              spotlightColor="rgba(255, 0, 0, 0.7)"
+            >
+              <div className="flex items-center gap-4 mb-6">
+                <div className="text-4xl">⚠️</div>
+                <h2 className="text-3xl font-bold text-text-primary">The Problem</h2>
+              </div>
+              
+              <div className="space-y-4">
+                <p className="text-text-secondary leading-relaxed">
+                  India's heritage is timeless—but time isn't always kind to it. Monuments erode, 
+                  stories get lost in translation, and many people—especially in bandwidth-constrained 
+                  regions—never get to experience these treasures meaningfully.
+                </p>
+                <p className="text-text-secondary leading-relaxed">
+                  Right now, heritage feels distant, either locked behind textbooks or reduced to static photos.
+                </p>
+              </div>
+
+              {/* Problem Stats */}
+              <div className="grid grid-cols-3 gap-4 mt-8">
+                <div className="text-center p-3 bg-red-100 rounded-lg">
+                  <div className="text-2xl font-bold text-red-600">70%</div>
+                  <div className="text-xs text-red-500">Sites at Risk</div>
+                </div>
+                <div className="text-center p-3 bg-orange-100 rounded-lg">
+                  <div className="text-2xl font-bold text-orange-600">50%</div>
+                  <div className="text-xs text-orange-500">Stories Lost</div>
+                </div>
+                <div className="text-center p-3 bg-yellow-100 rounded-lg">
+                  <div className="text-2xl font-bold text-yellow-600">85%</div>
+                  <div className="text-xs text-yellow-500">Limited Access</div>
+                </div>
+              </div>
+            </SpotlightCard>
+          </motion.div>
+
+          {/* Our Solution */}
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            <SpotlightCard
+              className="bg-[#CEB392] backdrop-blur-sm border border-gray-200 h-full"
+              spotlightColor="rgba(255, 165, 0, 0.7)"
+            >
+              <div className="flex items-center gap-4 mb-6">
+                <div className="text-4xl">💡</div>
+                <h2 className="text-3xl font-bold text-text-primary">Our Solution</h2>
+              </div>
+              
+              <div className="space-y-4">
+                <p className="text-text-secondary leading-relaxed">
+                  We're building a <strong>low-bandwidth, offline-first AR platform</strong> that lets people 
+                  explore India's cultural sites through immersive 3D storytelling.
+                </p>
+                <p className="text-text-secondary leading-relaxed">
+                  Instead of tech gimmicks, we focus on <strong>accessibility and narrative depth</strong>. 
+                  Even with limited internet, users can dive into compressed 3D reconstructions, listen to 
+                  multilingual narrations, and enjoy guided AR tours.
+                </p>
+              </div>
+
+              {/* Solution Features */}
+              <div className="grid grid-cols-2 gap-3 mt-8">
+                <div className="flex items-center gap-2 p-2 bg-green-100 rounded-lg">
+                  <span className="text-green-600">📱</span>
+                  <span className="text-xs text-green-600 font-medium">Offline-First</span>
+                </div>
+                <div className="flex items-center gap-2 p-2 bg-blue-100 rounded-lg">
+                  <span className="text-blue-600">🌍</span>
+                  <span className="text-xs text-blue-600 font-medium">Multilingual</span>
+                </div>
+                <div className="flex items-center gap-2 p-2 bg-purple-100 rounded-lg">
+                  <span className="text-purple-600">⚡</span>
+                  <span className="text-xs text-purple-600 font-medium">Lightweight</span>
+                </div>
+                <div className="flex items-center gap-2 p-2 bg-pink-100 rounded-lg">
+                  <span className="text-pink-600">🎭</span>
+                  <span className="text-xs text-pink-600 font-medium">Story-Rich</span>
+                </div>
+              </div>
+            </SpotlightCard>
+          </motion.div>
+        </div>
+
+        {/* How It Works Process */}
         <motion.div 
-          className="grid md:grid-cols-2 gap-12 items-center"
-          initial="hidden"
-          animate={isInView ? "visible" : ""}
-          variants={{
-            hidden: { opacity: 0 },
-            visible: {
-              opacity: 1,
-              transition: {
-                staggerChildren: 0.2
-              }
-            }
-          }}
+          className="mb-20"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
         >
-          <AboutContent />
-          <MissionVideo />
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold text-text-primary mb-4">How It Works</h2>
+            <p className="text-xl text-text-secondary">Our four-step process to preserve heritage</p>
+          </div>
+          
+          <div className="max-w-4xl mx-auto">
+            <ProcessTimeline />
+          </div>
+        </motion.div>
+
+        {/* Who We Serve */}
+        <motion.div 
+          className="mb-20"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+        >
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold text-text-primary mb-4">Who We Serve</h2>
+            <p className="text-xl text-text-secondary">Connecting diverse communities with heritage</p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {userGroups.map((group, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+              >
+                <SpotlightCard
+                  className="bg-[#CEB392] backdrop-blur-sm border border-gray-200 text-center h-full"
+                  spotlightColor={group.color}
+                >
+                  <div className="text-4xl mb-4">{group.icon}</div>
+                  <h3 className="text-lg font-bold text-text-primary mb-3">{group.title}</h3>
+                  <p className="text-sm text-text-secondary">{group.description}</p>
+                </SpotlightCard>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Vision & Stats */}
+        <motion.div
+          className="text-center"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+        >
+          <SpotlightCard
+            className="bg-[#CEB392] backdrop-blur-sm border border-gray-200 max-w-4xl mx-auto"
+            spotlightColor="rgba(255, 255, 0, 0.7)"
+          >
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <div className="text-4xl">🚀</div>
+              <h2 className="text-3xl md:text-4xl font-bold text-text-primary">Our Vision</h2>
+            </div>
+            
+            <p className="text-xl text-text-secondary leading-relaxed mb-8">
+              This isn't AR for the sake of AR. It's a <strong>digital bridge between India's past and its future.</strong> 
+              We begin with five iconic heritage sites, but our journey expands toward dozens more, alongside 
+              features like VR museum tie-ins and a contributor-driven storytelling marketplace.
+            </p>
+            
+            {/* Animated Stats */}
+            <div className="grid grid-cols-3 gap-8">
+              <StatCounter end={5} label="Heritage Sites" delay={0.2} />
+              <StatCounter end={15} label="Languages" delay={0.4} />
+              <StatCounter end={100} label="Stories+" delay={0.6} />
+            </div>
+          </SpotlightCard>
         </motion.div>
       </div>
     </section>
