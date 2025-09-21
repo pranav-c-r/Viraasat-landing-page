@@ -645,17 +645,19 @@ function SettingsPanel({
 // Konark Sun Temple narration script
 const SUN_TEMPLE_SCRIPT = `The Konark Sun Temple\n\nImagine a temple so grand it was designed as a colossal celestial chariot for the Sun God himself, carved from stone and steeped in legend. Welcome to the Konark Sun Temple, a 13th-century marvel on the coast of Odisha, India, that is as mysterious as it is magnificent.\n\nA Chariot Forged in Stone\n\nBuilt around 1250 CE by King Narasimhadeva I of the Eastern Ganga Dynasty, the temple is an architectural ode to Surya, the Sun God. The entire structure is conceived as his gigantic chariot, carefully oriented towards the east so that the first rays of sunrise strike the principal entrance.\n\n24 Exquisite Wheels: Each wheel is not just a masterpiece of carving but a symbol of time itself, representing the 24 fortnights of the Hindu year. Each is intricately detailed with carvings and can even be used as a sundial to tell the time.\n\nSeven Mighty Horses: The chariot is drawn by seven powerful stone horses, symbolising the seven days of the week.\n\nLegends That Defy Gravity\n\nThe temple’s wonders extend beyond its visible form into the realm of captivating legend.\n\nThe Floating Idol: Folklore whispers that the main shrine once housed a massive idol of Lord Surya, mysteriously suspended in mid-air. How was this possible?\n\nThe Power of the Lodestone: The secret was said to be a gigantic 52-ton lodestone (a natural magnet) installed in the temple's apex. Its magnetic force was so perfectly calibrated that it held the iron-rich idol aloft, creating a breathtaking spectacle of divine levitation.\n\nThe "Black Pagoda" and the Sailors' Curse\n\nLocated just 2 km from the sea, the temple played a crucial role in maritime history.\n\nEuropean sailors navigating the Bay of Bengal used its towering presence as a landmark. They nicknamed it the "Black Pagoda" due to its dark, weathered appearance.\n\nThe legend grows darker. They believed the temple's legendary lodestone had such powerful magnetic properties that it could draw ships off course, causing them to wreck on the treacherous shores. To save their vessels, tales suggest that Portuguese sailors eventually removed the great magnet and the idol, stealing away the temple's miraculous heart and leaving the structure incomplete.\n\nA Legacy Shrouded in Mystery\n\nWhile the truth of the magnetic idol is debated by historians, the facts are just as compelling. The construction was indeed halted abruptly, likely due to the king's death, leaving the main sanctum unfinished. This air of mystery, combined with its staggering architectural genius, has earned Konark a place as a UNESCO World Heritage Site.\n\nIt remains a place where myth and history collide—a stone poem dedicated to the sun, whose secrets continue to captivate the world.`;
 
-// Web Speech API TTS logic
-function useSunTempleSpeech() {
+function splitScriptToSentences(script) {
+  return script.split(/(?<=[.!?])\s+/g);
+}
+
+function useSunTempleSpeechWithCaptions() {
   const synthRef = useRef(window.speechSynthesis);
   const utteranceRef = useRef(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [currentCaption, setCurrentCaption] = useState("");
   const [isPaused, setIsPaused] = useState(false);
-
-  // Prefer Indian English female voice if available
+  const sentences = useMemo(() => splitScriptToSentences(SUN_TEMPLE_SCRIPT), []);
   const getVoice = () => {
     const voices = window.speechSynthesis.getVoices();
-    // Prefer Indian English female
     return voices.find(v => v.lang === 'en-IN' && v.gender === 'female')
       || voices.find(v => v.lang === 'en-IN' && v.name.toLowerCase().includes('female'))
       || voices.find(v => v.lang === 'en-IN')
@@ -663,49 +665,62 @@ function useSunTempleSpeech() {
       || voices.find(v => v.lang.startsWith('en'))
       || null;
   };
-
   const playSpeech = () => {
     if (!('speechSynthesis' in window)) return;
     if (synthRef.current.speaking) synthRef.current.cancel();
-    const utter = new window.SpeechSynthesisUtterance(SUN_TEMPLE_SCRIPT);
-    const voice = getVoice();
-    if (voice) utter.voice = voice;
-    utter.rate = 0.98;
-    utter.pitch = 1.05;
-    utter.volume = 1;
-    utter.onend = () => { setIsSpeaking(false); setIsPaused(false); };
-    utter.onerror = () => { setIsSpeaking(false); setIsPaused(false); };
-    synthRef.current.speak(utter);
-    utteranceRef.current = utter;
-    setIsSpeaking(true);
-    setIsPaused(false);
+    let idx = 0;
+    const speakNext = () => {
+      if (idx >= sentences.length) {
+        setIsSpeaking(false);
+        setIsPaused(false);
+        setCurrentCaption("");
+        return;
+      }
+      const utter = new window.SpeechSynthesisUtterance(sentences[idx]);
+      const voice = getVoice();
+      if (voice) utter.voice = voice;
+      utter.rate = 0.98;
+      utter.pitch = 1.05;
+      utter.volume = 1;
+      utter.onstart = () => setCurrentCaption(sentences[idx]);
+      utter.onend = () => {
+        idx++;
+        speakNext();
+      };
+      utter.onerror = () => {
+        setIsSpeaking(false);
+        setIsPaused(false);
+        setCurrentCaption("");
+      };
+      utteranceRef.current = utter;
+      synthRef.current.speak(utter);
+      setIsSpeaking(true);
+      setIsPaused(false);
+    };
+    speakNext();
   };
-
   const stopSpeech = () => {
     if (synthRef.current.speaking) {
       synthRef.current.cancel();
       setIsSpeaking(false);
       setIsPaused(false);
+      setCurrentCaption("");
     }
   };
-
   const pauseSpeech = () => {
     if (synthRef.current.speaking && !synthRef.current.paused) {
       synthRef.current.pause();
       setIsPaused(true);
     }
   };
-
   const resumeSpeech = () => {
     if (synthRef.current.paused) {
       synthRef.current.resume();
       setIsPaused(false);
     }
   };
-
-  useEffect(() => () => stopSpeech(), []); // Stop on unmount
-
-  return { playSpeech, stopSpeech, pauseSpeech, resumeSpeech, isSpeaking, isPaused };
+  useEffect(() => () => stopSpeech(), []);
+  return { playSpeech, stopSpeech, pauseSpeech, resumeSpeech, isSpeaking, isPaused, currentCaption };
 }
 
 // Main component
@@ -723,7 +738,7 @@ export default function SunTempleExplorer() {
   }, []);
   
   const { timeOfDay, setTimeOfDay, weather, setWeather, cycleTime, isPlaying } = useTimeOfDay();
-  const { playSpeech, stopSpeech, pauseSpeech, resumeSpeech, isSpeaking, isPaused } = useSunTempleSpeech();
+  const { playSpeech, stopSpeech, pauseSpeech, resumeSpeech, isSpeaking, isPaused, currentCaption } = useSunTempleSpeechWithCaptions();
 
   const handlePlayerMove = (position) => {
     // Play ambient sounds based on location
@@ -920,6 +935,9 @@ export default function SunTempleExplorer() {
           ⏹️ Stop
         </button>
       </div>
+      {currentCaption && (
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 bg-black bg-opacity-80 text-white text-lg px-6 py-3 rounded shadow-lg max-w-2xl text-center z-50">{currentCaption}</div>
+      )}
     </div>
   );
 }

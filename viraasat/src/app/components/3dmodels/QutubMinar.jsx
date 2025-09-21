@@ -645,36 +645,92 @@ function SettingsPanel({
 // Qutub Minar narration script
 const QUTUB_MINAR_SCRIPT = `Qutub Minar\n\nAn Ancient Skyscraper with a Turbulent Past\n\nIt's the world's tallest brick minaret, but its story is a dramatic mix of victory, tragedy, and architectural ambition.\n\nA Victory Tower... Built with Temples: The complex is a powerful display of history's layers. Qutub-ud-din Aibak started the minar to celebrate his victory. Look at the mosque at its base (Quwwat-ul-Islam). Its walls are built with materials from 27 demolished Hindu and Jain temples. You can clearly see the recycled Hindu carvings on the pillars.\n\nThe Unfinished Top Story: The tower has five stories now. But it was originally planned to have a seventh! The top stump you see was meant to be built higher. Why was it stopped? Possibly due of the death of its creators or structural concerns.\n\nThe Mysterious Iron Pillar: In the same complex stands a 1600-year-old iron pillar that refuses to rust. For centuries, scientists were baffled by its corrosion resistance. The secret? A unique combination of high phosphorus content and a protective layer that formed over time, a testament to ancient India's advanced metallurgy.\n\nIt Was Struck by Lightning... Twice! In 1368, the top story was hit by lightning and destroyed. It was replaced by the two stories you see today (the 4th and 5th), which were built by Firoz Shah Tughlaq. It was struck again in 1503 and repaired by Sikandar Lodi.\n\nA Tragic History: The tower has witnessed terrible accidents. In 1981, a power failure led to a stampede inside the narrow spiral staircase, resulting in multiple fatalities. This is why public access to the inside of the tower is now prohibited.\n\nAnother "Leaning" Tower: The minar leans just over 2 feet from its vertical axis. Extensive surveys have shown it's stable and has been leaning since it was built, likely due to the addition of new stories by different rulers over time.`;
 
-// Web Speech API TTS logic
-function useQutubMinarSpeech() {
+// Helper: Split script into sentences for captions
+function splitScriptToSentences(script) {
+  return script.split(/(?<=[.!?])\s+/g);
+}
+
+// Web Speech API TTS logic with captions
+function useQutubMinarSpeechWithCaptions() {
   const synthRef = useRef(window.speechSynthesis);
   const utteranceRef = useRef(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [currentCaption, setCurrentCaption] = useState("");
+  const [isPaused, setIsPaused] = useState(false);
+  const sentences = useMemo(() => splitScriptToSentences(QUTUB_MINAR_SCRIPT), []);
+
+  // Prefer Indian English female voice if available
+  const getVoice = () => {
+    const voices = window.speechSynthesis.getVoices();
+    return voices.find(v => v.lang === 'en-IN' && v.gender === 'female')
+      || voices.find(v => v.lang === 'en-IN' && v.name.toLowerCase().includes('female'))
+      || voices.find(v => v.lang === 'en-IN')
+      || voices.find(v => v.lang.startsWith('en') && v.gender === 'female')
+      || voices.find(v => v.lang.startsWith('en'))
+      || null;
+  };
 
   const playSpeech = () => {
     if (!('speechSynthesis' in window)) return;
     if (synthRef.current.speaking) synthRef.current.cancel();
-    const utter = new window.SpeechSynthesisUtterance(QUTUB_MINAR_SCRIPT);
-    utter.rate = 1;
-    utter.pitch = 1;
-    utter.volume = 1;
-    utter.onend = () => setIsSpeaking(false);
-    utter.onerror = () => setIsSpeaking(false);
-    synthRef.current.speak(utter);
-    utteranceRef.current = utter;
-    setIsSpeaking(true);
+    let idx = 0;
+    const speakNext = () => {
+      if (idx >= sentences.length) {
+        setIsSpeaking(false);
+        setIsPaused(false);
+        setCurrentCaption("");
+        return;
+      }
+      const utter = new window.SpeechSynthesisUtterance(sentences[idx]);
+      const voice = getVoice();
+      if (voice) utter.voice = voice;
+      utter.rate = 0.98;
+      utter.pitch = 1.05;
+      utter.volume = 1;
+      utter.onstart = () => setCurrentCaption(sentences[idx]);
+      utter.onend = () => {
+        idx++;
+        speakNext();
+      };
+      utter.onerror = () => {
+        setIsSpeaking(false);
+        setIsPaused(false);
+        setCurrentCaption("");
+      };
+      utteranceRef.current = utter;
+      synthRef.current.speak(utter);
+      setIsSpeaking(true);
+      setIsPaused(false);
+    };
+    speakNext();
   };
 
   const stopSpeech = () => {
     if (synthRef.current.speaking) {
       synthRef.current.cancel();
       setIsSpeaking(false);
+      setIsPaused(false);
+      setCurrentCaption("");
+    }
+  };
+
+  const pauseSpeech = () => {
+    if (synthRef.current.speaking && !synthRef.current.paused) {
+      synthRef.current.pause();
+      setIsPaused(true);
+    }
+  };
+
+  const resumeSpeech = () => {
+    if (synthRef.current.paused) {
+      synthRef.current.resume();
+      setIsPaused(false);
     }
   };
 
   useEffect(() => () => stopSpeech(), []); // Stop on unmount
 
-  return { playSpeech, stopSpeech, isSpeaking };
+  return { playSpeech, stopSpeech, pauseSpeech, resumeSpeech, isSpeaking, isPaused, currentCaption };
 }
 
 // Main component
@@ -692,7 +748,7 @@ export default function QutubMinarExplorer() {
   }, []);
   
   const { timeOfDay, setTimeOfDay, weather, setWeather, cycleTime, isPlaying } = useTimeOfDay();
-  const { playSpeech, stopSpeech, isSpeaking } = useQutubMinarSpeech();
+  const { playSpeech, stopSpeech, pauseSpeech, resumeSpeech, isSpeaking, isPaused, currentCaption } = useQutubMinarSpeechWithCaptions();
 
   const handlePlayerMove = (position) => {
     // Play ambient sounds based on location
@@ -863,18 +919,38 @@ export default function QutubMinarExplorer() {
         <button
           className="bg-black bg-opacity-60 text-white px-3 py-1 rounded hover:bg-opacity-80"
           onClick={playSpeech}
-          disabled={isSpeaking}
+          disabled={isSpeaking && !isPaused}
         >
           ▶️ Play Narration
+        </button>
+        <button
+          className="bg-black bg-opacity-60 text-white px-3 py-1 rounded hover:bg-opacity-80"
+          onClick={pauseSpeech}
+          disabled={!isSpeaking || isPaused}
+        >
+          ⏸️ Pause
+        </button>
+        <button
+          className="bg-black bg-opacity-60 text-white px-3 py-1 rounded hover:bg-opacity-80"
+          onClick={resumeSpeech}
+          disabled={!isSpeaking || !isPaused}
+        >
+          ▶️ Resume
         </button>
         <button
           className="bg-black bg-opacity-60 text-white px-3 py-1 rounded hover:bg-opacity-80"
           onClick={stopSpeech}
           disabled={!isSpeaking}
         >
-          ⏹️ Stop Narration
+          ⏹️ Stop
         </button>
       </div>
+      {/* Captions/subtitles overlay */}
+      {currentCaption && (
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 bg-black bg-opacity-80 text-white text-lg px-6 py-3 rounded shadow-lg max-w-2xl text-center z-50">
+          {currentCaption}
+        </div>
+      )}
     </div>
   );
 }
