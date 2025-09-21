@@ -642,6 +642,72 @@ function SettingsPanel({
   );
 }
 
+// Sanchi Stupa narration script
+const SANCHI_STUPA_SCRIPT = `Sanchi Stupa: The Forgotten Wonder Rediscovered\n\nThe Oldest Stone Structure in India!\n\nWhile everyone was building with wood, Emperor Ashoka chose stone here. Then, this incredible site was abandoned and lost to the world for over 600 years, only to be rediscovered by a British officer in 1818.\n\nA Silent Teacher of Buddhism\n\nNo Actual Bones: A stupa is a relic mound. The Great Stupa at Sanchi is believed to house relics of Lord Buddha himself. But not his body; it's said to contain his ashes divided into several portions after his cremation.\n\nThe Carvings Tell Stories: Look at the four magnificent gateways (Toranas). They are covered in carvings. But you won't find a single image of Buddha in human form! Early Buddhists considered it improper to depict him directly. Instead, they used symbols: a wheel for his teaching, a tree for his enlightenment, footprints to mark his presence, and an empty throne.\n\nAshoka's Wife's Legacy: The original brick stupa was commissioned by Ashoka in the 3rd century BCE. But the beautiful gateways and stone casing were added later, sponsored by the artisans of the Satavahana period. Local tradition says Ashoka's wife, Devi, who was from nearby Vidisha, lived here.\n\nThe "Woah" Facts\n\nLost to the Jungle: After the decline of Buddhism in India, Sanchi was completely abandoned in the 13th century. The site was overgrown by a dense forest and forgotten until a British General, Edward Maddock, literally stumbled upon it in 1818.\n\nIt Was Nearly Dismantled! In the 19th century, amateur archaeologists wanted to take the stupa apart, believing they would find treasure inside. Thankfully, a more careful approach was taken, preserving it for the world.\n\nA Global Effort to Restore: The restoration of Sanchi in the 20th century was a massive international project. Experts from across the world, including Britain and Sri Lanka, helped carefully reassemble the fallen gateways and restore the site to its current glory.`;
+
+// Web Speech API TTS logic
+function useSanchiStupaSpeech() {
+  const synthRef = useRef(window.speechSynthesis);
+  const utteranceRef = useRef(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Prefer Indian English female voice if available
+  const getVoice = () => {
+    const voices = window.speechSynthesis.getVoices();
+    // Prefer Indian English female
+    return voices.find(v => v.lang === 'en-IN' && v.gender === 'female')
+      || voices.find(v => v.lang === 'en-IN' && v.name.toLowerCase().includes('female'))
+      || voices.find(v => v.lang === 'en-IN')
+      || voices.find(v => v.lang.startsWith('en') && v.gender === 'female')
+      || voices.find(v => v.lang.startsWith('en'))
+      || null;
+  };
+
+  const playSpeech = () => {
+    if (!('speechSynthesis' in window)) return;
+    if (synthRef.current.speaking) synthRef.current.cancel();
+    const utter = new window.SpeechSynthesisUtterance(SANCHI_STUPA_SCRIPT);
+    const voice = getVoice();
+    if (voice) utter.voice = voice;
+    utter.rate = 0.98;
+    utter.pitch = 1.05;
+    utter.volume = 1;
+    utter.onend = () => { setIsSpeaking(false); setIsPaused(false); };
+    utter.onerror = () => { setIsSpeaking(false); setIsPaused(false); };
+    synthRef.current.speak(utter);
+    utteranceRef.current = utter;
+    setIsSpeaking(true);
+    setIsPaused(false);
+  };
+
+  const stopSpeech = () => {
+    if (synthRef.current.speaking) {
+      synthRef.current.cancel();
+      setIsSpeaking(false);
+      setIsPaused(false);
+    }
+  };
+
+  const pauseSpeech = () => {
+    if (synthRef.current.speaking && !synthRef.current.paused) {
+      synthRef.current.pause();
+      setIsPaused(true);
+    }
+  };
+
+  const resumeSpeech = () => {
+    if (synthRef.current.paused) {
+      synthRef.current.resume();
+      setIsPaused(false);
+    }
+  };
+
+  useEffect(() => () => stopSpeech(), []); // Stop on unmount
+
+  return { playSpeech, stopSpeech, pauseSpeech, resumeSpeech, isSpeaking, isPaused };
+}
+
 // Main component
 export default function TempleExplorer() {
   const [infoText, setInfoText] = useState('🏛️ Enhanced Sanchi Stupa Explorer - Click to enter immersive mode');
@@ -657,6 +723,7 @@ export default function TempleExplorer() {
   }, []);
   
   const { timeOfDay, setTimeOfDay, weather, setWeather, cycleTime, isPlaying } = useTimeOfDay();
+  const { playSpeech, stopSpeech, pauseSpeech, resumeSpeech, isSpeaking, isPaused } = useSanchiStupaSpeech();
 
   const handlePlayerMove = (position) => {
     // Play ambient sounds based on location
@@ -684,6 +751,11 @@ export default function TempleExplorer() {
     // Initialize ambient sounds
     audioManager.playAmbient('outdoor');
   }, [audioManager]);
+
+  useEffect(() => {
+    if (!showInstructions) playSpeech();
+    else stopSpeech();
+  }, [showInstructions]);
 
   return (
     <div className="w-full h-screen relative overflow-hidden">
@@ -816,6 +888,38 @@ export default function TempleExplorer() {
           </div>
         </div>
       )}
+
+      {/* Add TTS controls */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex gap-2">
+        <button
+          className="bg-black bg-opacity-60 text-white px-3 py-1 rounded hover:bg-opacity-80"
+          onClick={playSpeech}
+          disabled={isSpeaking && !isPaused}
+        >
+          ▶️ Play Narration
+        </button>
+        <button
+          className="bg-black bg-opacity-60 text-white px-3 py-1 rounded hover:bg-opacity-80"
+          onClick={pauseSpeech}
+          disabled={!isSpeaking || isPaused}
+        >
+          ⏸️ Pause
+        </button>
+        <button
+          className="bg-black bg-opacity-60 text-white px-3 py-1 rounded hover:bg-opacity-80"
+          onClick={resumeSpeech}
+          disabled={!isSpeaking || !isPaused}
+        >
+          ▶️ Resume
+        </button>
+        <button
+          className="bg-black bg-opacity-60 text-white px-3 py-1 rounded hover:bg-opacity-80"
+          onClick={stopSpeech}
+          disabled={!isSpeaking}
+        >
+          ⏹️ Stop
+        </button>
+      </div>
     </div>
   );
 }
