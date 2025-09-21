@@ -794,7 +794,7 @@ class InfiniteGridMenu {
     gl.enable(gl.CULL_FACE);
     gl.enable(gl.DEPTH_TEST);
 
-    gl.clearColor(0, 0, 0, 0);
+    gl.clearColor(0.36, 0.25, 0.20, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     gl.uniformMatrix4fv(this.discLocations.uWorldMatrix, false, this.worldMatrix);
@@ -962,7 +962,7 @@ export default function InfiniteMenu({ items = [] }) {
   };
 
   return (
-    <div className="relative w-full h-full bg-gradient-to-br from-background/50 to-surface/30 backdrop-blur-sm rounded-xl overflow-hidden">
+  <div className="relative w-full h-full bg-gradient-to-br from-background/50 to-surface/30 backdrop-blur-sm rounded-xl overflow-hidden">
       <canvas
         id="infinite-grid-menu-canvas"
         ref={canvasRef}
@@ -973,45 +973,45 @@ export default function InfiniteMenu({ items = [] }) {
         <>
           <h2
             className={`
-          select-none
-          absolute
-          font-black
-          text-4xl md:text-6xl lg:text-7xl
-          left-8 md:left-16
-          top-1/2
-          transform
-          translate-x-0 md:translate-x-[20%]
-          -translate-y-1/2
-          transition-all
-          text-text-secondary
-          ease-[cubic-bezier(0.25,0.1,0.25,1.0)]
-          ${
-            isMoving
-              ? 'opacity-0 pointer-events-none duration-[100ms]'
-              : 'opacity-100 pointer-events-auto duration-[500ms]'
-          }
-        `}
+            select-none
+            absolute
+            font-black
+            text-4xl md:text-6xl lg:text-7xl
+            left-8 md:left-16
+            top-1/2
+            transform
+            translate-x-0 md:translate-x-[20%]
+            -translate-y-1/2
+            transition-all
+            text-[#CEB392]
+            ease-[cubic-bezier(0.25,0.1,0.25,1.0)]
+            ${
+              isMoving
+                ? 'opacity-0 pointer-events-none duration-[100ms]'
+                : 'opacity-100 pointer-events-auto duration-[500ms]'
+            }
+          `}
           >
             {activeItem.title}
           </h2>
 
           <p
             className={`
-          select-none
-          absolute
-          max-w-[15ch] md:max-w-[12ch]
-          text-lg md:text-xl lg:text-2xl
-          top-1/2
-          right-4 md:right-8
-          text-text-secondary
-          transition-all
-          ease-[cubic-bezier(0.25,0.1,0.25,1.0)]
-          ${
-            isMoving
-              ? 'opacity-0 pointer-events-none duration-[100ms] translate-x-[-60%] -translate-y-1/2'
-              : 'opacity-100 pointer-events-auto duration-[500ms] translate-x-[-90%] -translate-y-1/2'
-          }
-        `}
+            select-none
+            absolute
+            max-w-[15ch] md:max-w-[12ch]
+            text-lg md:text-xl lg:text-2xl
+            top-1/2
+            right-4 md:right-8
+            text-[#CEB392]
+            transition-all
+            ease-[cubic-bezier(0.25,0.1,0.25,1.0)]
+            ${
+              isMoving
+                ? 'opacity-0 pointer-events-none duration-[100ms] translate-x-[-60%] -translate-y-1/2'
+                : 'opacity-100 pointer-events-auto duration-[500ms] translate-x-[-90%] -translate-y-1/2'
+            }
+          `}
           >
             {activeItem.description}
           </p>
@@ -1019,29 +1019,29 @@ export default function InfiniteMenu({ items = [] }) {
           <div
             onClick={handleButtonClick}
             className={`
-          absolute
-          left-1/2
-          z-10
-          w-12 h-12 md:w-16 md:h-16
-          grid
-          place-items-center
-          bg-primary
-          hover:bg-primary/90
-          border-4
-          border-borders
-          rounded-full
-          cursor-pointer
-          transition-all
-          ease-[cubic-bezier(0.25,0.1,0.25,1.0)]
-          hover:scale-110
-          ${
-            isMoving
-              ? 'bottom-[-80px] opacity-0 pointer-events-none duration-[100ms] scale-0 -translate-x-1/2'
-              : 'bottom-12 md:bottom-16 opacity-100 pointer-events-auto duration-[500ms] scale-100 -translate-x-1/2'
-          }
-        `}
+            absolute
+            left-1/2
+            z-10
+            w-12 h-12 md:w-16 md:h-16
+            grid
+            place-items-center
+            bg-primary
+            hover:bg-primary/90
+            border-4
+            border-borders
+            rounded-full
+            cursor-pointer
+            transition-all
+            ease-[cubic-bezier(0.25,0.1,0.25,1.0)]
+            hover:scale-110
+            ${
+              isMoving
+                ? 'bottom-[-80px] opacity-0 pointer-events-none duration-[100ms] scale-0 -translate-x-1/2'
+                : 'bottom-12 md:bottom-16 opacity-100 pointer-events-auto duration-[500ms] scale-100 -translate-x-1/2'
+            }
+          `}
           >
-            <p className="select-none relative text-background text-xl md:text-2xl font-bold">&#x2197;</p>
+            <p className="select-none relative text-[#CEB392] text-xl md:text-2xl font-bold">&#x2197;</p>
           </div>
         </>
       )}

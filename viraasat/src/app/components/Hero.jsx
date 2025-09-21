@@ -160,8 +160,8 @@ export default function Hero() {
       {/* DotGrid Background */}
       <div className="absolute inset-0 w-full h-full">
         <DotGrid
-          dotSize={3}
-          gap={10}
+          dotSize={1}
+          gap={8}
           baseColor="#DDCBB0"
           activeColor="#C21807"
           proximity={120}
