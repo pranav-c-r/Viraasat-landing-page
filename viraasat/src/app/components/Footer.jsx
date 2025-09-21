@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Footer() {
   const [isVisible, setIsVisible] = useState(false);
@@ -67,9 +69,29 @@ export default function Footer() {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand Section */}
           <div className="lg:col-span-1">
-            <h3 className="text-2xl font-bold text-text-primary mb-4 transform transition-all duration-700 ease-out delay-100 opacity-0 animate-fade-in-up" style={isVisible ? { transform: 'translateY(0)', opacity: 1 } : {}}>
-              Viraasat
-            </h3>
+            <Link
+              href="/"
+              className="flex items-center gap-3 transform transition-all duration-700 ease-out delay-100 opacity-0 animate-fade-in-up"
+              style={isVisible ? { transform: 'translateY(0)', opacity: 1 } : {}}
+            >
+              <Image
+                src="/iconlogoremovebg.png"
+                alt="Viraasat Icon"
+                width={180}
+                height={180}
+                className="h-12 w-auto object-contain"
+                priority
+              />
+              <Image
+                src="/textlogo removebg.png"
+                alt="Viraasat Text Logo"
+                width={120}
+                height={40}
+                className="h-8 w-auto object-contain"
+                priority
+              />
+            </Link>
+
             <p className="text-text-secondary mb-6 transform transition-all duration-700 ease-out delay-200 opacity-0 animate-fade-in-up" style={isVisible ? { transform: 'translateY(0)', opacity: 1 } : {}}>
               Preserving cultural heritage through immersive AR experiences. 
               Making history accessible to everyone, everywhere.
