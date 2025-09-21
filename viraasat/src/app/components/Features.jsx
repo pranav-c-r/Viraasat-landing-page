@@ -29,16 +29,16 @@ const createFeatureImage = (icon, title, description, index) => {
   const ctx = canvas.getContext('2d');
   
   canvas.width = 800;
-  canvas.height = 600;
-  
+  canvas.height = 600; 
   const gradients = [
-    ['#667eea', '#764ba2'],
-    ['#f093fb', '#f5576c'],  
-    ['#4facfe', '#00f2fe'],
-    ['#43e97b', '#38f9d7'],
-    ['#fa709a', '#fee140'],
-    ['#a8edea', '#fed6e3']
-  ];
+  ['#3E2723', '#5D4037'], // Dark Espresso → Cocoa
+  ['#4E342E', '#6D4C41'], // Coffee → Mocha
+  ['#3B2F2F', '#5C4033'], // Dark Roast → Walnut
+  ['#2C1B12', '#4B2E2E'], // Deep Brown → Mahogany
+  ['#402218', '#603F2B'], // Chestnut → Dark Umber
+  ['#2E1A12', '#4E342E']  // Bitter Chocolate → Coffee
+];
+
   
   const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
   const colors = gradients[index % gradients.length];
