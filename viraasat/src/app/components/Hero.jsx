@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import Aurora from './Aurora';
+import DotGrid from './DotGrid';
 
 // Particle system component for background effects
 const CulturalParticles = () => {
@@ -69,7 +71,7 @@ const CulturalParticles = () => {
         
         // Draw particle
         ctx.globalAlpha = particle.opacity;
-        ctx.fillStyle = '#8B5A2B'; // Traditional earthy color
+        ctx.fillStyle = '#5D4037'; // Dark brown color
         ctx.font = `${particle.size}px serif`;
         ctx.fillText(particle.pattern.symbol, particle.x, particle.y);
       });
@@ -141,19 +143,44 @@ export default function Hero() {
       ref={containerRef}
       className="min-h-screen bg-background flex items-center justify-center relative overflow-hidden"
     >
+      {/* Aurora Background */}
+      <div className="absolute inset-0 w-full h-full">
+        <Aurora
+          colorStops={["#F28B82", "#FFF9C4", "#FFDAB9"]}
+          blend={0.5}
+          amplitude={0.4}
+          speed={0.5}
+        />
+      </div>
+      
+      {/* DotGrid Background */}
+      <div className="absolute inset-0 w-full h-full">
+        <DotGrid
+          dotSize={3}
+          gap={10}
+          baseColor="#DDCBB0"
+          activeColor="#C21807"
+          proximity={120}
+          shockRadius={250}
+          shockStrength={5}
+          resistance={750}
+          returnDuration={1.5}
+        />
+      </div>
+      
       {/* Animated background elements */}
       <CulturalParticles />
       
       {/* Decorative cultural ornaments */}
-      <CulturalOrnament className="absolute top-10 left-5 w-20 h-20 text-primary/20" />
-      <CulturalOrnament className="absolute bottom-10 right-5 w-16 h-16 text-primary/20" />
-      <CulturalOrnament className="absolute top-20 right-10 w-12 h-12 text-primary/20" />
-      <CulturalOrnament className="absolute bottom-20 left-10 w-14 h-14 text-primary/20" />
+      <CulturalOrnament className="absolute top-10 left-5 w-20 h-20 text-[#5D4037]/20" />
+      <CulturalOrnament className="absolute bottom-10 right-5 w-16 h-16 text-[#5D4037]/20" />
+      <CulturalOrnament className="absolute top-20 right-10 w-12 h-12 text-[#5D4037]/20" />
+      <CulturalOrnament className="absolute bottom-20 left-10 w-14 h-14 text-[#5D4037]/20" />
       
       <div className="max-w-6xl mx-auto px-6 text-center relative z-10">
         <motion.h1 
           style={{ y: yHeading }}
-          className="text-5xl md:text-7xl font-bold text-text-primary mb-6"
+          className="text-5xl md:text-7xl font-bold text-[#3E2723] mb-6 "
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
@@ -167,7 +194,7 @@ export default function Hero() {
             Step into History.
           </motion.span>
           <motion.span 
-            className="block text-primary mt-2"
+            className="block text-[#5D4037] mt-2 "
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.8 }}
@@ -178,7 +205,7 @@ export default function Hero() {
         
         <motion.p 
           style={{ y: yText }}
-          className="text-xl md:text-2xl text-text-secondary mb-8 max-w-3xl mx-auto"
+          className="text-xl md:text-2xl text-[#4E342E] mb-8 max-w-3xl mx-auto "
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7, duration: 0.8 }}
@@ -195,19 +222,19 @@ export default function Hero() {
           transition={{ delay: 0.9, duration: 0.8 }}
         >
           <motion.button 
-            className="bg-primary hover:bg-primary/90 text-background px-8 py-4 rounded-lg font-semibold text-lg transition-all relative overflow-hidden group"
+            className="bg-[#5D4037] hover:bg-[#4E342E] text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all relative overflow-hidden group [text-shadow:_0_1px_0_rgb(0_0_0_/_30%)]"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
             <span className="relative z-10">Download App</span>
             <motion.div 
-              className="absolute inset-0 bg-primary-dark opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute inset-0 bg-[#3E2723] opacity-0 group-hover:opacity-100 transition-opacity"
               initial={false}
             />
           </motion.button>
           
           <motion.button 
-            className="border-2 border-primary text-primary hover:bg-primary hover:text-background px-8 py-4 rounded-lg font-semibold text-lg transition-all relative overflow-hidden group"
+            className="border-2 border-[#5D4037] text-[#5D4037] hover:bg-[#5D4037] hover:text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all relative overflow-hidden group  hover:[text-shadow:_0_1px_0_rgb(0_0_0_/_30%)]"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onHoverStart={() => setIsDemoHovered(true)}
@@ -215,7 +242,7 @@ export default function Hero() {
           >
             <span className="relative z-10">Try Demo</span>
             <motion.div 
-              className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute inset-0 bg-[#5D4037] opacity-0 group-hover:opacity-100 transition-opacity"
               initial={false}
             />
           </motion.button>
@@ -228,13 +255,13 @@ export default function Hero() {
           onHoverStart={() => setIsDemoHovered(true)}
           onHoverEnd={() => setIsDemoHovered(false)}
         >
-          
+          {/* Demo content can go here */}
         </motion.div>
       </div>
       
       {/* Subtle floating elements */}
       <motion.div 
-        className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center text-text-secondary"
+        className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center text-[#4E342E] "
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.5, duration: 0.8 }}
@@ -251,4 +278,4 @@ export default function Hero() {
       </motion.div>
     </section>
   );
-} 
+}

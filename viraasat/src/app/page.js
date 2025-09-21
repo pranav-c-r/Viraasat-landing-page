@@ -6,7 +6,7 @@ import HowItWorks from './components/HowItWorks';
 import Community from './components/Community';
 import CTA from './components/CTA';
 import Footer from './components/Footer';
-import ThemeToggle from './components/ThemeToggle';
+// import ThemeToggle from './components/ThemeToggle';
 import InfiniteMenu from './components/InfiniteMenu';
 
 // Heritage site data with high-quality stock photos
@@ -46,7 +46,7 @@ const heritageItems = [
 export default function Home() {
   return (
     <main className="min-h-screen">
-      <ThemeToggle/>
+      {/* <ThemeToggle/> */}
       <Hero/>
       
       {/* Interactive Heritage Explorer */}
