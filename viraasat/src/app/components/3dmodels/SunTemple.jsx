@@ -6,7 +6,88 @@ import { useRef, useState, useEffect, useMemo } from 'react';
 import { Vector3, Euler, Box3, Sphere, Raycaster, Mesh, MathUtils, Color } from 'three';
 import { Camera, Settings, Sun, Moon, Volume2, VolumeX, Eye, EyeOff } from 'lucide-react';
 
-// Audio Manager for spatial audio
+// Device detection functions
+const isMobile = () => {
+  if (typeof window === 'undefined') return false;
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+};
+
+const isAndroid = () => {
+  if (typeof window === 'undefined') return false;
+  return /Android/i.test(navigator.userAgent);
+};
+
+// AR View Component for Android Mobile
+function ARView() {
+  useEffect(() => {
+    // Load model-viewer script
+    const script = document.createElement('script');
+    script.type = 'module';
+    script.src = 'https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js';
+    document.head.appendChild(script);
+
+    return () => {
+      // Cleanup
+      if (document.head.contains(script)) {
+        document.head.removeChild(script);
+      }
+    };
+  }, []);
+
+  return (
+    <div className="w-full h-screen relative">
+      <model-viewer
+        src="/models/suntemple_base_basic_shaded.glb"
+        alt="Sun Temple 3D Model"
+        ar
+        ar-modes="webxr scene-viewer quick-look"
+        camera-controls
+        tone-mapping="commerce"
+        poster="/images/temple-poster.jpg"
+        shadow-intensity="1"
+        auto-rotate
+        auto-rotate-delay="3000"
+        style={{
+          width: '100%',
+          height: '100vh',
+          backgroundColor: '#87CEEB'
+        }}
+      >
+        <button 
+          slot="ar-button"
+          className="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:bg-blue-700 transition-all"
+        >
+          View in AR 📱
+        </button>
+        
+        <div 
+          slot="poster" 
+          className="absolute inset-0 bg-gradient-to-b from-sky-400 to-sky-200 flex items-center justify-center"
+        >
+          <div className="text-center text-white">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+            <p>Loading Sun Temple...</p>
+          </div>
+        </div>
+      </model-viewer>
+
+      {/* Instructions overlay */}
+      <div className="absolute top-4 left-4 right-4 bg-black bg-opacity-80 text-white p-4 rounded-lg">
+        <h2 className="text-lg font-bold mb-2">🏛️ Sun Temple AR Experience</h2>
+        <p className="text-sm mb-2">• Tap and drag to rotate the temple</p>
+        <p className="text-sm mb-2">• Pinch to zoom in/out</p>
+        <p className="text-sm">• Tap "View in AR" to place the temple in your real world!</p>
+      </div>
+
+      {/* Info panel */}
+      <div className="absolute bottom-4 left-4 right-4 bg-black bg-opacity-80 text-white p-3 rounded-lg text-center">
+        <p className="text-sm">Experience the ancient Sun Temple in Augmented Reality</p>
+      </div>
+    </div>
+  );
+}
+
+// Audio Manager for spatial audio (ORIGINAL CODE)
 class AudioManager {
   constructor() {
     this.sounds = {};
@@ -47,7 +128,7 @@ class AudioManager {
   }
 }
 
-// Weather and Time System
+// Weather and Time System (ORIGINAL CODE)
 // Pure state hook
 function useTimeOfDay() {
   const [timeOfDay, setTimeOfDay] = useState(0.6); // 0 = night, 1 = day
@@ -60,7 +141,7 @@ function useTimeOfDay() {
 }
 
 
-// Component to update time using useFrame
+// Component to update time using useFrame (ORIGINAL CODE)
 function TimeOfDayUpdater({ timeOfDay, setTimeOfDay, isPlaying }) {
   useFrame((state, delta) => {
     if (isPlaying) {
@@ -71,7 +152,7 @@ function TimeOfDayUpdater({ timeOfDay, setTimeOfDay, isPlaying }) {
 }
 
 
-// Particle System Component
+// Particle System Component (ORIGINAL CODE)
 function Particles({ type, count = 100 }) {
   const mesh = useRef();
   const particles = useMemo(() => {
@@ -123,7 +204,7 @@ function Particles({ type, count = 100 }) {
   );
 }
 
-// Animated Wildlife
+// Animated Wildlife (ORIGINAL CODE)
 function Birds() {
   const groupRef = useRef();
   const birds = useMemo(() => {
@@ -168,7 +249,7 @@ function Birds() {
   );
 }
 
-// Enhanced Environment with dynamic lighting
+// Enhanced Environment with dynamic lighting (ORIGINAL CODE)
 function EnhancedEnvironment({ timeOfDay, weather }) {
   const sunPosition = useMemo(() => {
     const angle = timeOfDay * Math.PI * 2;
@@ -243,7 +324,7 @@ function EnhancedEnvironment({ timeOfDay, weather }) {
   );
 }
 
-// Collision detection system (unchanged)
+// Collision detection system (ORIGINAL CODE - unchanged)
 class CollisionDetector {
   constructor() {
     this.raycaster = new Raycaster();
@@ -334,7 +415,7 @@ class CollisionDetector {
   }
 }
 
-// Enhanced First-person controls with footstep audio
+// Enhanced First-person controls with footstep audio (ORIGINAL CODE)
 function FirstPersonControls({ speed = 5, collisionDetector, audioManager, onMove }) {
   const { camera, gl } = useThree();
   const moveForward = useRef(false);
@@ -484,7 +565,7 @@ function FirstPersonControls({ speed = 5, collisionDetector, audioManager, onMov
   return null;
 }
 
-// Temple model with enhanced materials
+// Temple model with enhanced materials (ORIGINAL CODE)
 function TempleModel({ collisionDetector }) {
   const { scene } = useGLTF('/models/suntemple_base_basic_shaded.glb');
   
@@ -511,7 +592,7 @@ function TempleModel({ collisionDetector }) {
   return <primitive object={scene} scale={0.8} />;
 }
 
-// Enhanced ground with better textures
+// Enhanced ground with better textures (ORIGINAL CODE)
 function Ground({ collisionDetector }) {
   const groundRef = useRef();
   const grassTexture = useTexture('/textures/green3.jpg');
@@ -554,7 +635,7 @@ function Ground({ collisionDetector }) {
   );
 }
 
-// Settings Panel
+// Settings Panel (ORIGINAL CODE)
 function SettingsPanel({ 
   audioManager, 
   timeOfDay, 
@@ -642,8 +723,8 @@ function SettingsPanel({
   );
 }
 
-// Main component
-export default function TempleExplorer() {
+// Desktop 3D Experience Component (ALL ORIGINAL CODE)
+function Desktop3DExperience() {
   const [infoText, setInfoText] = useState('🏛️ Enhanced Temple Explorer - Click to enter immersive mode');
   const [showInstructions, setShowInstructions] = useState(true);
   const [photoMode, setPhotoMode] = useState(false);
@@ -818,4 +899,38 @@ export default function TempleExplorer() {
       )}
     </div>
   );
+}
+
+// Main component with device detection
+export default function SunTemple() {
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
+  const [isAndroidDevice, setIsAndroidDevice] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Device detection on client side
+    setIsMobileDevice(isMobile());
+    setIsAndroidDevice(isAndroid());
+    setIsLoading(false);
+  }, []);
+
+  // Show loading while detecting device
+  if (isLoading) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-gradient-to-b from-sky-400 to-sky-200">
+        <div className="text-center text-white">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-xl">Loading Sun Temple Experience...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show AR view for Android devices
+  if (isMobileDevice && isAndroidDevice) {
+    return <ARView />;
+  }
+
+  // Show full desktop 3D experience for all other devices (desktop, iOS, etc.)
+  return <Desktop3DExperience />;
 }
