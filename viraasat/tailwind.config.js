@@ -29,6 +29,9 @@ module.exports = {
           borders: "#3E332A",
         }
       },
+      fontFamily: {
+        sans: ["var(--font-poppins)", "sans-serif"],
+      },
     },
   },
   plugins: [],
