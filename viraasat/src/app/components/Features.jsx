@@ -2,6 +2,7 @@
 
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
+import CircularGallery from './CircularGallery'
 
 // Cultural pattern background component
 const CulturalPatternBg = () => {
@@ -19,102 +20,78 @@ const CulturalPatternBg = () => {
   );
 };
 
-// Animated icon component with cultural motifs
-const AnimatedIcon = ({ icon, index }) => {
-  return (
-    <motion.div 
-      className="relative text-5xl mb-4 p-4 rounded-full bg-primary/10"
-      initial={{ scale: 0, rotate: -180 }}
-      whileInView={{ scale: 1, rotate: 0 }}
-      viewport={{ once: true, margin: "-20%" }}
-      transition={{ 
-        delay: index * 0.1, 
-        type: "spring", 
-        stiffness: 100,
-        damping: 12
-      }}
-      whileHover={{ 
-        scale: 1.2, 
-        rotate: 5,
-        transition: { type: "spring", stiffness: 400, damping: 10 }
-      }}
-    >
-      {icon}
-      {/* Decorative cultural elements */}
-      <motion.div 
-        className="absolute -inset-4 rounded-full border-2 border-primary/30 pointer-events-none"
-        initial={{ opacity: 0, scale: 0.8 }}
-        whileInView={{ opacity: 1, scale: 1 }}
-        viewport={{ once: true }}
-        transition={{ delay: index * 0.1 + 0.2, duration: 0.5 }}
-      />
-    </motion.div>
-  );
-};
-
-// Feature card component with elegant animations
-const FeatureCard = ({ feature, index }) => {
-  const cardRef = useRef(null);
-  const isInView = useInView(cardRef, { once: true, margin: "-10%" });
+// Function to create feature card images
+const createFeatureImage = (icon, title, description, index) => {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
   
-  return (
-    <motion.div
-      ref={cardRef}
-      className="bg-surface/80 p-6 rounded-2xl border border-white/10 backdrop-blur-sm hover:backdrop-blur-md transition-all duration-300 relative overflow-hidden group"
-      initial={{ opacity: 0, y: 50 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      whileHover={{ 
-        y: -10, 
-        boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
-        transition: { duration: 0.3 }
-      }}
-    >
-      {/* Subtle cultural pattern overlay on hover */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-        <svg width="100%" height="100%" className="absolute inset-0">
-          <pattern id={`pattern-${index}`} x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
-            <circle cx="10" cy="10" r="2" fill="currentColor" opacity="0.1"/>
-            <path d="M25,0 L50,25 L25,50 L0,25 Z" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.2"/>
-          </pattern>
-          <rect x="0" y="0" width="100%" height="100%" fill={`url(#pattern-${index})`} />
-        </svg>
-      </div>
-      
-      {/* Animated border effect on hover */}
-      <div className="absolute inset-0 rounded-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-        <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-primary/10 rounded-2xl blur-sm group-hover:blur-md transition-all duration-300"></div>
-      </div>
-      
-      <AnimatedIcon icon={feature.icon} index={index} />
-      
-      <motion.h3 
-        className="text-xl font-bold text-text-primary mb-3"
-        initial={{ opacity: 0 }}
-        animate={isInView ? { opacity: 1 } : {}}
-        transition={{ duration: 0.5, delay: index * 0.1 + 0.2 }}
-      >
-        {feature.title}
-      </motion.h3>
-      
-      <motion.p 
-        className="text-text-secondary"
-        initial={{ opacity: 0 }}
-        animate={isInView ? { opacity: 1 } : {}}
-        transition={{ duration: 0.5, delay: index * 0.1 + 0.3 }}
-      >
-        {feature.description}
-      </motion.p>
-      
-      {/* Subtle reveal effect on hover */}
-      <motion.div 
-        className="absolute bottom-0 left-0 w-full h-1 bg-primary origin-left"
-        initial={{ scaleX: 0 }}
-        whileHover={{ scaleX: 1 }}
-        transition={{ duration: 0.3 }}
-      />
-    </motion.div>
-  );
+  // Set canvas size
+  canvas.width = 800;
+  canvas.height = 600;
+  
+  // Create gradient background based on feature index
+  const gradients = [
+    ['#667eea', '#764ba2'], // Purple-blue
+    ['#f093fb', '#f5576c'], // Pink-red  
+    ['#4facfe', '#00f2fe'], // Blue-cyan
+    ['#43e97b', '#38f9d7'], // Green-cyan
+    ['#fa709a', '#fee140'], // Pink-yellow
+    ['#a8edea', '#fed6e3']  // Mint-pink
+  ];
+  
+  const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  const colors = gradients[index % gradients.length];
+  gradient.addColorStop(0, colors[0]);
+  gradient.addColorStop(1, colors[1]);
+  
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // Add subtle pattern overlay
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+  for (let i = 0; i < 20; i++) {
+    for (let j = 0; j < 15; j++) {
+      if ((i + j) % 2 === 0) {
+        ctx.fillRect(i * 40, j * 40, 20, 20);
+      }
+    }
+  }
+  
+  // Draw icon
+  ctx.font = '120px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+  ctx.fillText(icon, canvas.width / 2, canvas.height / 2 - 60);
+  
+  // Draw title
+  ctx.font = 'bold 48px Arial';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(title, canvas.width / 2, canvas.height / 2 + 80);
+  
+  // Draw description (wrapped text)
+  ctx.font = '24px Arial';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+  const words = description.split(' ');
+  let line = '';
+  let y = canvas.height / 2 + 140;
+  const maxWidth = canvas.width - 100;
+  
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + words[n] + ' ';
+    const metrics = ctx.measureText(testLine);
+    const testWidth = metrics.width;
+    if (testWidth > maxWidth && n > 0) {
+      ctx.fillText(line, canvas.width / 2, y);
+      line = words[n] + ' ';
+      y += 35;
+    } else {
+      line = testLine;
+    }
+  }
+  ctx.fillText(line, canvas.width / 2, y);
+  
+  return canvas.toDataURL();
 };
 
 export default function Features() {
@@ -193,23 +170,23 @@ export default function Features() {
           </motion.p>
         </motion.div>
         
+        {/* Circular Gallery replacing the grid layout */}
         <motion.div 
-          className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
-          initial="hidden"
-          animate={isInView ? "visible" : ""}
-          variants={{
-            hidden: { opacity: 0 },
-            visible: {
-              opacity: 1,
-              transition: {
-                staggerChildren: 0.1
-              }
-            }
-          }}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={isInView ? { opacity: 1, scale: 1 } : {}}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          style={{ height: '600px', position: 'relative' }}
         >
-          {features.map((feature, index) => (
-            <FeatureCard key={index} feature={feature} index={index} />
-          ))}
+          <CircularGallery 
+            items={features.map((feature, index) => ({
+              image: createFeatureImage(feature.icon, feature.title, feature.description, index),
+              text: feature.title
+            }))}
+            bend={3} 
+            textColor="#ffffff" 
+            borderRadius={0.05} 
+            scrollEase={0.02}
+          />
         </motion.div>
       </div>
     </section>
