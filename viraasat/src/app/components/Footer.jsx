@@ -23,10 +23,10 @@ export default function Footer() {
   ];
   
   const socialLinks = [
-    { name: "LinkedIn", href: "#", icon: "💼" },
-    { name: "YouTube", href: "#", icon: "📺" },
-    { name: "Instagram", href: "#", icon: "📸" },
-    { name: "Twitter", href: "#", icon: "🐦" }
+    { name: "LinkedIn", href: "#", iconUrl: "https://img.icons8.com/?size=100&id=13930&format=png&color=000000" },
+    { name: "YouTube", href: "#", iconUrl: "https://img.icons8.com/?size=100&id=19318&format=png&color=000000" },
+    { name: "Instagram", href: "#", iconUrl: "https://img.icons8.com/?size=100&id=32323&format=png&color=000000" },
+    { name: "Twitter", href: "#", iconUrl: "https://img.icons8.com/?size=100&id=phOKFKYpe00C&format=png&color=000000" }
   ];
 
   const languages = [
@@ -79,10 +79,10 @@ export default function Footer() {
                 <a
                   key={index}
                   href={social.href}
-                  className="text-2xl hover:text-primary transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 relative group"
+                  className="inline-flex items-center justify-center w-8 h-8 hover:text-primary transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 relative group"
                   aria-label={social.name}
                 >
-                  {social.icon}
+                  <img src={social.iconUrl} alt={social.name} className="w-6 h-6 object-contain" />
                   <span className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-text-primary text-background text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
                     {social.name}
                   </span>
