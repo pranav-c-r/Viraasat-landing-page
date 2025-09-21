@@ -2,6 +2,8 @@
 
 import { motion, useInView } from 'framer-motion';
 import { useRef, useState } from 'react';
+import Particles from './Particles';
+import { AnimatePresence } from 'framer-motion'; // Import from framer-motion instead of redefining
 
 // Cultural pattern background component
 const CulturalPatternBg = () => {
@@ -52,11 +54,9 @@ const CulturalOrnament = ({ className, delay = 0 }) => {
 // Animated video placeholder with play button
 const MissionVideo = () => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const videoRef = useRef(null);
   
   const handlePlay = () => {
     setIsPlaying(true);
-    // In a real implementation, this would play an actual video
     setTimeout(() => setIsPlaying(false), 5000); // Simulate video ending
   };
   
@@ -239,6 +239,20 @@ export default function About() {
 
   return (
     <section ref={sectionRef} className="py-20 bg-surface relative overflow-hidden">
+      {/* Particles Background */}
+      <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+        <Particles
+          particleColors={['#940000', '#940000', '#940000']}
+          particleCount={200}
+          particleSpread={10}
+          speed={0.1}
+          particleBaseSize={100}
+          moveParticlesOnHover={false}
+          alphaParticles={false}
+          disableRotation={false}
+        />
+      </div>
+
       {/* Cultural pattern background */}
       <CulturalPatternBg />
       
@@ -296,8 +310,3 @@ export default function About() {
     </section>
   );
 }
-
-// AnimatePresence component for exit animations
-const AnimatePresence = ({ children }) => {
-  return <>{children}</>;
-};

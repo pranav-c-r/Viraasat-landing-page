@@ -19,10 +19,11 @@ export default function Navbar() {
         <ul className="hidden md:flex gap-8 text-ivoryWhite font-medium">
           {navLinks.map(link => (
             <li key={link.name}>
-              <Link href={link.href} legacyBehavior>
-                <a className="px-3 py-2 rounded-lg hover:bg-goldAccent/20 transition-colors">
-                  {link.name}
-                </a>
+              <Link
+                href={link.href}
+                className="px-3 py-2 rounded-lg hover:bg-goldAccent/20 transition-colors"
+              >
+                {link.name}
               </Link>
             </li>
           ))}

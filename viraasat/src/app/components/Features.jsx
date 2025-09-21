@@ -2,7 +2,8 @@
 
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
-import CircularGallery from './CircularGallery'
+import CircularGallery from './CircularGallery';
+import Particles from './Particles';
 
 // Cultural pattern background component
 const CulturalPatternBg = () => {
@@ -22,21 +23,21 @@ const CulturalPatternBg = () => {
 
 // Function to create feature card images
 const createFeatureImage = (icon, title, description, index) => {
+  if (typeof document === 'undefined') return ''; // SSR safe
+  
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   
-  // Set canvas size
   canvas.width = 800;
   canvas.height = 600;
   
-  // Create gradient background based on feature index
   const gradients = [
-    ['#667eea', '#764ba2'], // Purple-blue
-    ['#f093fb', '#f5576c'], // Pink-red  
-    ['#4facfe', '#00f2fe'], // Blue-cyan
-    ['#43e97b', '#38f9d7'], // Green-cyan
-    ['#fa709a', '#fee140'], // Pink-yellow
-    ['#a8edea', '#fed6e3']  // Mint-pink
+    ['#667eea', '#764ba2'],
+    ['#f093fb', '#f5576c'],  
+    ['#4facfe', '#00f2fe'],
+    ['#43e97b', '#38f9d7'],
+    ['#fa709a', '#fee140'],
+    ['#a8edea', '#fed6e3']
   ];
   
   const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
@@ -47,7 +48,6 @@ const createFeatureImage = (icon, title, description, index) => {
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   
-  // Add subtle pattern overlay
   ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
   for (let i = 0; i < 20; i++) {
     for (let j = 0; j < 15; j++) {
@@ -57,19 +57,16 @@ const createFeatureImage = (icon, title, description, index) => {
     }
   }
   
-  // Draw icon
   ctx.font = '120px Arial';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
   ctx.fillText(icon, canvas.width / 2, canvas.height / 2 - 60);
   
-  // Draw title
   ctx.font = 'bold 48px Arial';
   ctx.fillStyle = '#ffffff';
   ctx.fillText(title, canvas.width / 2, canvas.height / 2 + 80);
   
-  // Draw description (wrapped text)
   ctx.font = '24px Arial';
   ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
   const words = description.split(' ');
@@ -133,6 +130,20 @@ export default function Features() {
 
   return (
     <section ref={sectionRef} className="py-20 bg-background relative overflow-hidden">
+      {/* Particles Background */}
+      <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+        <Particles
+          particleColors={['#940000', '#940000', '#940000']}
+          particleCount={200}
+          particleSpread={10}
+          speed={0.1}
+          particleBaseSize={100}
+          moveParticlesOnHover={false}
+          alphaParticles={false}
+          disableRotation={false}
+        />
+      </div>
+
       {/* Cultural pattern background */}
       <CulturalPatternBg />
       
