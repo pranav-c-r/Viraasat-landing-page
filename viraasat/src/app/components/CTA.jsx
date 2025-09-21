@@ -1,7 +1,60 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import SpotlightCard from './SpotlightCard';
+
+const SpotlightCard = ({ children, className = '', spotlightColor = 'rgba(255, 255, 255, 0.25)', style = {} }) => {
+  const divRef = useRef(null);
+  const [isFocused, setIsFocused] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [opacity, setOpacity] = useState(0);
+
+  const handleMouseMove = e => {
+    if (!divRef.current || isFocused) return;
+
+    const rect = divRef.current.getBoundingClientRect();
+    setPosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
+
+  const handleFocus = () => {
+    setIsFocused(true);
+    setOpacity(0.6);
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    setOpacity(0);
+  };
+
+  const handleMouseEnter = () => {
+    setOpacity(0.6);
+  };
+
+  const handleMouseLeave = () => {
+    setOpacity(0);
+  };
+
+  return (
+    <div
+      ref={divRef}
+      onMouseMove={handleMouseMove}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className={`relative rounded-3xl border border-neutral-800 overflow-hidden p-8 ${className}`}
+      style={style}
+    >
+      <div
+        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 ease-in-out"
+        style={{
+          opacity,
+          background: `radial-gradient(circle at ${position.x}px ${position.y}px, ${spotlightColor}, transparent 80%)`
+        }}
+      />
+      {children}
+    </div>
+  );
+};
 
 export default function CTA() {
   const [isVisible, setIsVisible] = useState(false);
@@ -65,27 +118,36 @@ export default function CTA() {
         
         {/* Download Buttons with enhanced animations */}
         <div className={`flex flex-col sm:flex-row gap-6 justify-center mb-16 transform transition-all duration-1000 ease-out delay-300 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-          <button className="group bg-background hover:bg-background/90 text-primary px-10 py-5 rounded-2xl font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-3 shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 relative overflow-hidden">
-            <span className="absolute inset-0 bg-gradient-to-r from-amber-400/10 to-rose-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span>
-            <span className="text-2xl transform group-hover:scale-110 transition-transform duration-300">📱</span>
-            <span>Download for iOS</span>
-            <span className="absolute -right-4 -top-4 w-20 h-20 bg-amber-300/30 rounded-full transform scale-0 group-hover:scale-100 transition-transform duration-500"></span>
-          </button>
+          <SpotlightCard
+            className="bg-[#CEB392] backdrop-blur-sm border border-gray-200 group hover:shadow-3xl transition-all duration-500"
+            spotlightColor="rgba(255, 255, 0, 0.7)"
+          >
+            <button className="w-full font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-3 transform hover:-translate-y-1 relative overflow-hidden text-primary">
+              <span className="absolute inset-0 bg-gradient-to-r from-amber-400/10 to-rose-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span>
+              <span className="text-2xl transform group-hover:scale-110 transition-transform duration-300">📱</span>
+              <span>Download for iOS</span>
+              <span className="absolute -right-4 -top-4 w-20 h-20 bg-amber-300/30 rounded-full transform scale-0 group-hover:scale-100 transition-transform duration-500"></span>
+            </button>
+          </SpotlightCard>
           
-          <button className="group bg-background hover:bg-background/90 text-primary px-10 py-5 rounded-2xl font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-3 shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 relative overflow-hidden">
-            <span className="absolute inset-0 bg-gradient-to-r from-indigo-400/10 to-emerald-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span>
-            <span className="text-2xl transform group-hover:scale-110 transition-transform duration-300">🤖</span>
-            <span>Download for Android</span>
-            <span className="absolute -right-4 -top-4 w-20 h-20 bg-indigo-300/30 rounded-full transform scale-0 group-hover:scale-100 transition-transform duration-500"></span>
-          </button>
+          <SpotlightCard
+            className="bg-[#CEB392] backdrop-blur-sm border border-gray-200 group hover:shadow-3xl transition-all duration-500"
+            spotlightColor="rgba(255, 0, 0, 0.7)"
+          >
+            <button className="w-full font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-3 transform hover:-translate-y-1 relative overflow-hidden text-primary">
+              <span className="absolute inset-0 bg-gradient-to-r from-indigo-400/10 to-emerald-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span>
+              <span className="text-2xl transform group-hover:scale-110 transition-transform duration-300">🤖</span>
+              <span>Download for Android</span>
+              <span className="absolute -right-4 -top-4 w-20 h-20 bg-indigo-300/30 rounded-full transform scale-0 group-hover:scale-100 transition-transform duration-500"></span>
+            </button>
+          </SpotlightCard>
         </div>
         
         {/* Additional CTAs with SpotlightCard effect */}
         <div className={`grid sm:grid-cols-2 gap-8 max-w-3xl mx-auto transform transition-all duration-1000 ease-out delay-500 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
           <SpotlightCard 
-            className="text-center group hover:shadow-3xl transition-all duration-500"
-            style={{ backgroundColor: '#CEB392' }}
-            spotlightColor="rgba(255, 165, 0, 0.4)"
+            className="bg-[#CEB392] backdrop-blur-sm border border-gray-200 text-center group hover:shadow-3xl transition-all duration-500"
+            spotlightColor="rgba(255, 165, 0, 0.7)"
           >
             <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-amber-400 to-rose-500 rounded-2xl flex items-center justify-center text-2xl transform group-hover:scale-110 transition-transform duration-300">
               🎭
@@ -99,9 +161,8 @@ export default function CTA() {
           </SpotlightCard>
           
           <SpotlightCard 
-            className="text-center group hover:shadow-3xl transition-all duration-500"
-            style={{ backgroundColor: '#CEB392' }}
-            spotlightColor="rgba(99, 102, 241, 0.4)"
+            className="bg-[#CEB392] backdrop-blur-sm border border-gray-200 text-center group hover:shadow-3xl transition-all duration-500"
+            spotlightColor="rgba(255, 255, 0, 0.7)"
           >
             <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-indigo-400 to-emerald-500 rounded-2xl flex items-center justify-center text-2xl transform group-hover:scale-110 transition-transform duration-300">
               ✉️
@@ -120,9 +181,8 @@ export default function CTA() {
           <p className="text-background/70 mb-8 text-lg">Trusted by cultural institutions worldwide</p>
           <div className="flex flex-wrap justify-center items-center gap-6 text-text-primary">
             <SpotlightCard 
-              className="flex flex-col items-center group py-4 px-6"
-              style={{ backgroundColor: '#CEB392' }}
-              spotlightColor="rgba(255, 255, 0, 0.3)"
+              className="bg-[#CEB392] backdrop-blur-sm border border-gray-200 flex flex-col items-center group py-4 px-6"
+              spotlightColor="rgba(255, 255, 0, 0.7)"
             >
               <div className="w-12 h-12 mb-2 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center text-2xl transform group-hover:scale-110 transition-transform duration-300">
                 🏛️
@@ -131,9 +191,8 @@ export default function CTA() {
             </SpotlightCard>
             
             <SpotlightCard 
-              className="flex flex-col items-center group py-4 px-6"
-              style={{ backgroundColor: '#CEB392' }}
-              spotlightColor="rgba(255, 0, 0, 0.3)"
+              className="bg-[#CEB392] backdrop-blur-sm border border-gray-200 flex flex-col items-center group py-4 px-6"
+              spotlightColor="rgba(255, 0, 0, 0.7)"
             >
               <div className="w-12 h-12 mb-2 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center text-2xl transform group-hover:scale-110 transition-transform duration-300">
                 🏫
@@ -142,9 +201,8 @@ export default function CTA() {
             </SpotlightCard>
             
             <SpotlightCard 
-              className="flex flex-col items-center group py-4 px-6"
-              style={{ backgroundColor: '#CEB392' }}
-              spotlightColor="rgba(0, 255, 0, 0.3)"
+              className="bg-[#CEB392] backdrop-blur-sm border border-gray-200 flex flex-col items-center group py-4 px-6"
+              spotlightColor="rgba(255, 165, 0, 0.7)"
             >
               <div className="w-12 h-12 mb-2 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center text-2xl transform group-hover:scale-110 transition-transform duration-300">
                 🏛️
@@ -153,9 +211,8 @@ export default function CTA() {
             </SpotlightCard>
             
             <SpotlightCard 
-              className="flex flex-col items-center group py-4 px-6"
-              style={{ backgroundColor: '#CEB392' }}
-              spotlightColor="rgba(255, 165, 0, 0.3)"
+              className="bg-[#CEB392] backdrop-blur-sm border border-gray-200 flex flex-col items-center group py-4 px-6"
+              spotlightColor="rgba(255, 255, 0, 0.7)"
             >
               <div className="w-12 h-12 mb-2 bg-gradient-to-br from-purple-400 to-pink-500 rounded-xl flex items-center justify-center text-2xl transform group-hover:scale-110 transition-transform duration-300">
                 🌍

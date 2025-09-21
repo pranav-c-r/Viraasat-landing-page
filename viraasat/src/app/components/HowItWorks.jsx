@@ -2,6 +2,60 @@
 
 import { useState, useEffect, useRef } from 'react';
 
+const SpotlightCard = ({ children, className = '', spotlightColor = 'rgba(255, 255, 255, 0.25)', style = {} }) => {
+  const divRef = useRef(null);
+  const [isFocused, setIsFocused] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [opacity, setOpacity] = useState(0);
+
+  const handleMouseMove = e => {
+    if (!divRef.current || isFocused) return;
+
+    const rect = divRef.current.getBoundingClientRect();
+    setPosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
+
+  const handleFocus = () => {
+    setIsFocused(true);
+    setOpacity(0.6);
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    setOpacity(0);
+  };
+
+  const handleMouseEnter = () => {
+    setOpacity(0.6);
+  };
+
+  const handleMouseLeave = () => {
+    setOpacity(0);
+  };
+
+  return (
+    <div
+      ref={divRef}
+      onMouseMove={handleMouseMove}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className={`relative rounded-3xl border border-neutral-800 overflow-hidden p-8 ${className}`}
+      style={style}
+    >
+      <div
+        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 ease-in-out"
+        style={{
+          opacity,
+          background: `radial-gradient(circle at ${position.x}px ${position.y}px, ${spotlightColor}, transparent 80%)`
+        }}
+      />
+      {children}
+    </div>
+  );
+};
+
 export default function HowItWorks() {
   const [activeStep, setActiveStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
@@ -96,12 +150,19 @@ export default function HowItWorks() {
           </div>
           
           {steps.map((step, index) => (
-            <div 
-              key={index} 
-              className={`text-center relative transform transition-all duration-700 ease-out ${
+            <SpotlightCard
+              key={index}
+              className={`bg-[#CEB392] backdrop-blur-sm border border-gray-200 text-center relative transform transition-all duration-700 ease-out ${
                 isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
               }`}
-              style={{ transitionDelay: `${index * 200}ms` }}
+              style={{ 
+                transitionDelay: `${index * 200}ms`
+              }}
+              spotlightColor={
+                index === 0 ? 'rgba(255, 255, 0, 0.7)' : 
+                index === 1 ? 'rgba(255, 0, 0, 0.7)' : 
+                'rgba(255, 165, 0, 0.7)'
+              }
               onMouseEnter={() => setActiveStep(index)}
             >
               {/* Step Number with gradient and cultural pattern */}
@@ -135,13 +196,16 @@ export default function HowItWorks() {
                   ))}
                 </div>
               </div>
-            </div>
+            </SpotlightCard>
           ))}
         </div>
         
         {/* Enhanced Call to Action */}
         <div className={`text-center mt-20 transform transition-all duration-1000 delay-700 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-          <div className="bg-background p-10 rounded-3xl max-w-2xl mx-auto shadow-2xl border border-borders/10 relative overflow-hidden">
+          <SpotlightCard
+            className="bg-[#CEB392] backdrop-blur-sm border border-gray-200 max-w-2xl mx-auto shadow-2xl relative overflow-hidden"
+            spotlightColor="rgba(255, 165, 0, 0.7)"
+          >
             {/* Decorative corner elements */}
             <div className="absolute top-4 left-4 text-3xl text-primary opacity-20">🪷</div>
             <div className="absolute top-4 right-4 text-3xl text-primary opacity-20">🪷</div>
@@ -159,7 +223,7 @@ export default function HowItWorks() {
               </span>
               <span className="absolute inset-0 bg-gradient-to-r from-amber-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
             </button>
-          </div>
+          </SpotlightCard>
         </div>
       </div>
     </section>

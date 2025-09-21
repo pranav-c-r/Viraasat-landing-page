@@ -642,6 +642,87 @@ function SettingsPanel({
   );
 }
 
+// Red Fort narration script
+const RED_FORT_SCRIPT = `A Fort That's Actually a Palace-City\n\nThis isn't just a fort; it was a lavish, self-contained city for the Mughal emperors. Every corner has a story of power, luxury, and intrigue.\n\nSecrets of the Emperor's City\n\nThe Hidden River: The beautiful stream of water that once flowed through the palace chambers (like in Nahr-i-Bihisht) wasn't just for decoration. It was a primitive air-cooling system, channeling water from the Yamuna River to cool the marble rooms during scorching Delhi summers.\n\nThe Emperor's "X" Mark: In the Diwan-i-Khas (Hall of Private Audiences), where the magnificent Peacock Throne once sat, you can now see a Persian couplet inscribed on the wall. It famously says, "If there is a paradise on earth, it is this, it is this, it is this!" But look for the black marble rectangle on the floor—that's where the throne was placed.\n\nThe Secret Tunnel: Legends speak of an underground tunnel that connected the Red Fort to the Yamuna bank, meant as a secret escape route for the emperor. It's now sealed, but the mystery remains.\n\nThe "Woah" Facts\n\nThe Color is a Lie! We call it the Red Fort, but it wasn't originally! The main palaces inside were built from brilliant, shining white marble. The red sandstone was for the outer walls. The name comes from the overwhelming red exterior.\n\nA Diamond Heist Location: This was the site of one of history's most famous heists. In 1739, Persian invader Nadir Shah not only conquered Delhi but also looted the Red Fort and made off with the legendary Koh-i-Noor diamond and the Peacock Throne.\n\nThe Soundproof Wall: The fort's massive walls, up to 110 feet high in places, were designed for defense. But they also had a cool side effect: they acted as a sound barrier, keeping the noise of the bustling city outside from disturbing the peace of the royal palace inside.`;
+
+function splitScriptToSentences(script) {
+  return script.split(/(?<=[.!?])\s+/g);
+}
+
+function useRedFortSpeechWithCaptions() {
+  const synthRef = useRef(window.speechSynthesis);
+  const utteranceRef = useRef(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [currentCaption, setCurrentCaption] = useState("");
+  const [isPaused, setIsPaused] = useState(false);
+  const sentences = useMemo(() => splitScriptToSentences(RED_FORT_SCRIPT), []);
+  const getVoice = () => {
+    const voices = window.speechSynthesis.getVoices();
+    return voices.find(v => v.lang === 'en-IN' && v.gender === 'female')
+      || voices.find(v => v.lang === 'en-IN' && v.name.toLowerCase().includes('female'))
+      || voices.find(v => v.lang === 'en-IN')
+      || voices.find(v => v.lang.startsWith('en') && v.gender === 'female')
+      || voices.find(v => v.lang.startsWith('en'))
+      || null;
+  };
+  const playSpeech = () => {
+    if (!('speechSynthesis' in window)) return;
+    if (synthRef.current.speaking) synthRef.current.cancel();
+    let idx = 0;
+    const speakNext = () => {
+      if (idx >= sentences.length) {
+        setIsSpeaking(false);
+        setIsPaused(false);
+        setCurrentCaption("");
+        return;
+      }
+      const utter = new window.SpeechSynthesisUtterance(sentences[idx]);
+      const voice = getVoice();
+      if (voice) utter.voice = voice;
+      utter.rate = 0.98;
+      utter.pitch = 1.05;
+      utter.volume = 1;
+      utter.onstart = () => setCurrentCaption(sentences[idx]);
+      utter.onend = () => {
+        idx++;
+        speakNext();
+      };
+      utter.onerror = () => {
+        setIsSpeaking(false);
+        setIsPaused(false);
+        setCurrentCaption("");
+      };
+      utteranceRef.current = utter;
+      synthRef.current.speak(utter);
+      setIsSpeaking(true);
+      setIsPaused(false);
+    };
+    speakNext();
+  };
+  const stopSpeech = () => {
+    if (synthRef.current.speaking) {
+      synthRef.current.cancel();
+      setIsSpeaking(false);
+      setIsPaused(false);
+      setCurrentCaption("");
+    }
+  };
+  const pauseSpeech = () => {
+    if (synthRef.current.speaking && !synthRef.current.paused) {
+      synthRef.current.pause();
+      setIsPaused(true);
+    }
+  };
+  const resumeSpeech = () => {
+    if (synthRef.current.paused) {
+      synthRef.current.resume();
+      setIsPaused(false);
+    }
+  };
+  useEffect(() => () => stopSpeech(), []);
+  return { playSpeech, stopSpeech, pauseSpeech, resumeSpeech, isSpeaking, isPaused, currentCaption };
+}
+
 // Main component
 export default function RedFortExplorer() {
   const [infoText, setInfoText] = useState('🏛️ Enhanced Red Fort Explorer - Click to enter immersive mode');
@@ -657,6 +738,7 @@ export default function RedFortExplorer() {
   }, []);
   
   const { timeOfDay, setTimeOfDay, weather, setWeather, cycleTime, isPlaying } = useTimeOfDay();
+  const { playSpeech, stopSpeech, pauseSpeech, resumeSpeech, isSpeaking, isPaused, currentCaption } = useRedFortSpeechWithCaptions();
 
   const handlePlayerMove = (position) => {
     // Play ambient sounds based on location
@@ -684,6 +766,11 @@ export default function RedFortExplorer() {
     // Initialize ambient sounds
     audioManager.playAmbient('outdoor');
   }, [audioManager]);
+
+  useEffect(() => {
+    if (!showInstructions) playSpeech();
+    else stopSpeech();
+  }, [showInstructions]);
 
   return (
     <div className="w-full h-screen relative overflow-hidden">
@@ -815,6 +902,17 @@ export default function RedFortExplorer() {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Add TTS controls */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex gap-2">
+        <button className="bg-black bg-opacity-60 text-white px-3 py-1 rounded hover:bg-opacity-80" onClick={playSpeech} disabled={isSpeaking && !isPaused}>▶️ Play Narration</button>
+        <button className="bg-black bg-opacity-60 text-white px-3 py-1 rounded hover:bg-opacity-80" onClick={pauseSpeech} disabled={!isSpeaking || isPaused}>⏸️ Pause</button>
+        <button className="bg-black bg-opacity-60 text-white px-3 py-1 rounded hover:bg-opacity-80" onClick={resumeSpeech} disabled={!isSpeaking || !isPaused}>▶️ Resume</button>
+        <button className="bg-black bg-opacity-60 text-white px-3 py-1 rounded hover:bg-opacity-80" onClick={stopSpeech} disabled={!isSpeaking}>⏹️ Stop</button>
+      </div>
+      {currentCaption && (
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 bg-black bg-opacity-80 text-white text-lg px-6 py-3 rounded shadow-lg max-w-2xl text-center z-50">{currentCaption}</div>
       )}
     </div>
   );

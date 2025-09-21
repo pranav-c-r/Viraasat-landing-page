@@ -897,6 +897,7 @@ function Desktop3DExperience() {
   }, []);
   
   const { timeOfDay, setTimeOfDay, weather, setWeather, cycleTime, isPlaying } = useTimeOfDay();
+  const { playSpeech, stopSpeech, pauseSpeech, resumeSpeech, isSpeaking, isPaused, currentCaption } = useSunTempleSpeechWithCaptions();
 
   const handlePlayerMove = (position) => {
     const distanceFromTemple = position.distanceTo(new Vector3(0, 0, 0));
@@ -921,6 +922,11 @@ function Desktop3DExperience() {
   useEffect(() => {
     audioManager.playAmbient('outdoor');
   }, [audioManager]);
+
+  useEffect(() => {
+    if (!showInstructions) playSpeech();
+    else stopSpeech();
+  }, [showInstructions]);
 
   return (
     <div className="w-full h-screen relative overflow-hidden">
@@ -1041,6 +1047,41 @@ function Desktop3DExperience() {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Add TTS controls */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex gap-2">
+        <button
+          className="bg-black bg-opacity-60 text-white px-3 py-1 rounded hover:bg-opacity-80"
+          onClick={playSpeech}
+          disabled={isSpeaking && !isPaused}
+        >
+          ▶️ Play Narration
+        </button>
+        <button
+          className="bg-black bg-opacity-60 text-white px-3 py-1 rounded hover:bg-opacity-80"
+          onClick={pauseSpeech}
+          disabled={!isSpeaking || isPaused}
+        >
+          ⏸️ Pause
+        </button>
+        <button
+          className="bg-black bg-opacity-60 text-white px-3 py-1 rounded hover:bg-opacity-80"
+          onClick={resumeSpeech}
+          disabled={!isSpeaking || !isPaused}
+        >
+          ▶️ Resume
+        </button>
+        <button
+          className="bg-black bg-opacity-60 text-white px-3 py-1 rounded hover:bg-opacity-80"
+          onClick={stopSpeech}
+          disabled={!isSpeaking}
+        >
+          ⏹️ Stop
+        </button>
+      </div>
+      {currentCaption && (
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 bg-black bg-opacity-80 text-white text-lg px-6 py-3 rounded shadow-lg max-w-2xl text-center z-50">{currentCaption}</div>
       )}
     </div>
   );

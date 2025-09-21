@@ -642,8 +642,89 @@ function SettingsPanel({
   );
 }
 
+// Taj Mahal narration script
+const TAJ_MAHAL_SCRIPT = `Beyond the Iconic Postcard Picture\n\nEveryone knows it's a symbol of love, but the Taj Mahal is hiding secrets in plain sight that will completely change how you see it.\n\nThe Illusions & Ingenuity\n\nThe Disappearing Minarets: Look closely at the four minarets. They are built to lean slightly outwards. This wasn't a mistake! It was a genius safety feature so that in case of an earthquake, they would fall away from the main tomb, protecting it.\n\nA Masterpiece of Symmetry... Almost: The entire complex is perfectly symmetrical. But find the two tombs inside. Shah Jahan's cenotaph is placed slightly west of Mumtaz's. This one asymmetry breaks the perfection because, in Islam, men are buried to the left of women. So even in death, he respected tradition.\n\nThe Changing Colors: The Taj is a mood ring! It changes color throughout the day: pinkish in the morning, dazzling white at noon, golden in the evening, and silvery under the moonlight. This was achieved with a specific type of translucent white marble.\n\nThe "Woah" Facts\n\nThe Bamboo Scaffolding: The entire dome was built with a scaffolding made not of steel, but of Bamboo. It was an immense, intricate web that held the workers and materials. Historians are still amazed by this engineering feat.\n\nThe Invisible Calligraphy: The beautiful black Quranic verses around the grand arches use an incredible trick. The letters are larger at the top and smaller at the bottom. From the ground, this optical illusion makes all the writing appear the same size to the viewer.`;
+
+function splitScriptToSentences(script) {
+  return script.split(/(?<=[.!?])\s+/g);
+}
+
+function useTajMahalSpeechWithCaptions() {
+  const synthRef = useRef(window.speechSynthesis);
+  const utteranceRef = useRef(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [currentCaption, setCurrentCaption] = useState("");
+  const [isPaused, setIsPaused] = useState(false);
+  const sentences = useMemo(() => splitScriptToSentences(TAJ_MAHAL_SCRIPT), []);
+  const getVoice = () => {
+    const voices = window.speechSynthesis.getVoices();
+    return voices.find(v => v.lang === 'en-IN' && v.gender === 'female')
+      || voices.find(v => v.lang === 'en-IN' && v.name.toLowerCase().includes('female'))
+      || voices.find(v => v.lang === 'en-IN')
+      || voices.find(v => v.lang.startsWith('en') && v.gender === 'female')
+      || voices.find(v => v.lang.startsWith('en'))
+      || null;
+  };
+  const playSpeech = () => {
+    if (!('speechSynthesis' in window)) return;
+    if (synthRef.current.speaking) synthRef.current.cancel();
+    let idx = 0;
+    const speakNext = () => {
+      if (idx >= sentences.length) {
+        setIsSpeaking(false);
+        setIsPaused(false);
+        setCurrentCaption("");
+        return;
+      }
+      const utter = new window.SpeechSynthesisUtterance(sentences[idx]);
+      const voice = getVoice();
+      if (voice) utter.voice = voice;
+      utter.rate = 0.98;
+      utter.pitch = 1.05;
+      utter.volume = 1;
+      utter.onstart = () => setCurrentCaption(sentences[idx]);
+      utter.onend = () => {
+        idx++;
+        speakNext();
+      };
+      utter.onerror = () => {
+        setIsSpeaking(false);
+        setIsPaused(false);
+        setCurrentCaption("");
+      };
+      utteranceRef.current = utter;
+      synthRef.current.speak(utter);
+      setIsSpeaking(true);
+      setIsPaused(false);
+    };
+    speakNext();
+  };
+  const stopSpeech = () => {
+    if (synthRef.current.speaking) {
+      synthRef.current.cancel();
+      setIsSpeaking(false);
+      setIsPaused(false);
+      setCurrentCaption("");
+    }
+  };
+  const pauseSpeech = () => {
+    if (synthRef.current.speaking && !synthRef.current.paused) {
+      synthRef.current.pause();
+      setIsPaused(true);
+    }
+  };
+  const resumeSpeech = () => {
+    if (synthRef.current.paused) {
+      synthRef.current.resume();
+      setIsPaused(false);
+    }
+  };
+  useEffect(() => () => stopSpeech(), []);
+  return { playSpeech, stopSpeech, pauseSpeech, resumeSpeech, isSpeaking, isPaused, currentCaption };
+}
+
 // Main component
-export default function TempleExplorer() {
+export default function TajMahalExplorer() {
   const [infoText, setInfoText] = useState('🏛️ Enhanced Taj Mahal Explorer - Click to enter immersive mode');
   const [showInstructions, setShowInstructions] = useState(true);
   const [photoMode, setPhotoMode] = useState(false);
@@ -657,6 +738,7 @@ export default function TempleExplorer() {
   }, []);
   
   const { timeOfDay, setTimeOfDay, weather, setWeather, cycleTime, isPlaying } = useTimeOfDay();
+  const { playSpeech, stopSpeech, pauseSpeech, resumeSpeech, isSpeaking, isPaused, currentCaption } = useTajMahalSpeechWithCaptions();
 
   const handlePlayerMove = (position) => {
     // Play ambient sounds based on location
@@ -684,6 +766,11 @@ export default function TempleExplorer() {
     // Initialize ambient sounds
     audioManager.playAmbient('outdoor');
   }, [audioManager]);
+
+  useEffect(() => {
+    if (!showInstructions) playSpeech();
+    else stopSpeech();
+  }, [showInstructions]);
 
   return (
     <div className="w-full h-screen relative overflow-hidden">
@@ -815,6 +902,17 @@ export default function TempleExplorer() {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Add TTS controls */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex gap-2">
+        <button className="bg-black bg-opacity-60 text-white px-3 py-1 rounded hover:bg-opacity-80" onClick={playSpeech} disabled={isSpeaking && !isPaused}>▶️ Play Narration</button>
+        <button className="bg-black bg-opacity-60 text-white px-3 py-1 rounded hover:bg-opacity-80" onClick={pauseSpeech} disabled={!isSpeaking || isPaused}>⏸️ Pause</button>
+        <button className="bg-black bg-opacity-60 text-white px-3 py-1 rounded hover:bg-opacity-80" onClick={resumeSpeech} disabled={!isSpeaking || !isPaused}>▶️ Resume</button>
+        <button className="bg-black bg-opacity-60 text-white px-3 py-1 rounded hover:bg-opacity-80" onClick={stopSpeech} disabled={!isSpeaking}>⏹️ Stop</button>
+      </div>
+      {currentCaption && (
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 bg-black bg-opacity-80 text-white text-lg px-6 py-3 rounded shadow-lg max-w-2xl text-center z-50">{currentCaption}</div>
       )}
     </div>
   );
