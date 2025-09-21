@@ -2,8 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import Aurora from './Aurora';
-import DotGrid from './DotGrid';
+import Prism from './Prism';
 
 // -----------------------------
 // Client-only CulturalParticles (fixed)
@@ -147,28 +146,18 @@ export default function Hero() {
       ref={containerRef}
       className="min-h-screen bg-background flex items-center justify-center relative overflow-hidden"
     >
-      {/* Aurora Background */}
-      <div className="absolute inset-0 w-full h-full">
-        <Aurora
-          colorStops={['#F28B82', '#FFF9C4', '#FFDAB9']}
-          blend={0.5}
-          amplitude={0.4}
-          speed={0.5}
-        />
-      </div>
-
-      {/* DotGrid Background */}
-      <div className="absolute inset-0 w-full h-full">
-        <DotGrid
-          dotSize={1}
-          gap={8}
-          baseColor="#DDCBB0"
-          activeColor="#C21807"
-          proximity={120}
-          shockRadius={250}
-          shockStrength={5}
-          resistance={750}
-          returnDuration={1.5}
+      {/* Prism Background */}
+      <div style={{ width: '100%', height: '900px', position: 'absolute', top: 0, left: 0, zIndex: 1 }}>
+        <Prism
+          animationType="hover"
+          timeScale={0.5}
+          height={3.5}
+          baseWidth={5.5}
+          scale={2.6}
+          hueShift={0.16}
+          colorFrequency={1.8}
+          noise={0}
+          glow={1}
         />
       </div>
 
