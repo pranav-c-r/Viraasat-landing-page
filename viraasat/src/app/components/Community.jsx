@@ -115,7 +115,7 @@ const AudienceCard = ({ audience, index }) => {
       }}
     >
       <SpotlightCard 
-        className="h-full bg-white/90 backdrop-blur-sm hover:backdrop-blur-md transition-all duration-300 border border-gray-200"
+        className="h-full bg-[#CEB392] backdrop-blur-sm hover:backdrop-blur-md transition-all duration-300 border border-gray-200"
         spotlightColor={spotlightColors[index]}
       >
         <AnimatedAudienceIcon icon={audience.icon} index={index} />
@@ -147,7 +147,7 @@ const AudienceCard = ({ audience, index }) => {
         
         {/* CTA Button */}
         <motion.button 
-          className="w-full bg-primary hover:bg-primary/90 text-white py-3 rounded-lg font-semibold transition-all relative overflow-hidden group"
+          className="w-full bg-primary hover:bg-primary/90 text-[#CEB392] py-3 rounded-lg font-semibold transition-all relative overflow-hidden group"
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.5, delay: index * 0.2 + 0.6 }}
@@ -179,7 +179,7 @@ const PartnershipSection = () => {
       transition={{ duration: 0.7, delay: 0.6 }}
     >
       <SpotlightCard 
-        className="bg-white/90 backdrop-blur-sm border border-gray-200"
+        className="bg-[#CEB392] backdrop-blur-sm border border-gray-200"
         spotlightColor="rgba(255, 165, 0, 0.7)"
       >
         <div className="max-w-4xl mx-auto text-center">

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import SpotlightCard from './SpotlightCard';
 
 export default function CTA() {
   const [isVisible, setIsVisible] = useState(false);
@@ -79,61 +80,88 @@ export default function CTA() {
           </button>
         </div>
         
-        {/* Additional CTAs with glassmorphism effect */}
+        {/* Additional CTAs with SpotlightCard effect */}
         <div className={`grid sm:grid-cols-2 gap-8 max-w-3xl mx-auto transform transition-all duration-1000 ease-out delay-500 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-          <div className="bg-background/10 backdrop-blur-xl p-8 rounded-2xl border border-background/20 shadow-2xl hover:shadow-3xl transition-all duration-500 group hover:bg-background/15">
+          <SpotlightCard 
+            className="text-center group hover:shadow-3xl transition-all duration-500"
+            style={{ backgroundColor: '#CEB392' }}
+            spotlightColor="rgba(255, 165, 0, 0.4)"
+          >
             <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-amber-400 to-rose-500 rounded-2xl flex items-center justify-center text-2xl transform group-hover:scale-110 transition-transform duration-300">
               🎭
             </div>
-            <h3 className="text-2xl font-bold text-background mb-3">Try Our Demo</h3>
-            <p className="text-background/80 mb-6">Experience AR heritage tours without downloading</p>
-            <button className="group relative border-2 border-background text-background hover:bg-background hover:text-primary px-6 py-3 rounded-xl font-medium transition-all duration-300 overflow-hidden">
+            <h3 className="text-2xl font-bold text-text-primary mb-3">Try Our Demo</h3>
+            <p className="text-text-secondary mb-6">Experience AR heritage tours without downloading</p>
+            <button className="group relative border-2 border-primary text-primary hover:bg-primary hover:text-background px-6 py-3 rounded-xl font-medium transition-all duration-300 overflow-hidden">
               <span className="relative z-10">Launch Demo</span>
-              <span className="absolute inset-0 bg-background transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 z-0"></span>
+              <span className="absolute inset-0 bg-primary transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 z-0"></span>
             </button>
-          </div>
+          </SpotlightCard>
           
-          <div className="bg-background/10 backdrop-blur-xl p-8 rounded-2xl border border-background/20 shadow-2xl hover:shadow-3xl transition-all duration-500 group hover:bg-background/15">
+          <SpotlightCard 
+            className="text-center group hover:shadow-3xl transition-all duration-500"
+            style={{ backgroundColor: '#CEB392' }}
+            spotlightColor="rgba(99, 102, 241, 0.4)"
+          >
             <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-indigo-400 to-emerald-500 rounded-2xl flex items-center justify-center text-2xl transform group-hover:scale-110 transition-transform duration-300">
               ✉️
             </div>
-            <h3 className="text-2xl font-bold text-background mb-3">Stay Updated</h3>
-            <p className="text-background/80 mb-6">Get notified about new heritage sites and features</p>
-            <button className="group relative border-2 border-background text-background hover:bg-background hover:text-primary px-6 py-3 rounded-xl font-medium transition-all duration-300 overflow-hidden">
+            <h3 className="text-2xl font-bold text-text-primary mb-3">Stay Updated</h3>
+            <p className="text-text-secondary mb-6">Get notified about new heritage sites and features</p>
+            <button className="group relative border-2 border-primary text-primary hover:bg-primary hover:text-background px-6 py-3 rounded-xl font-medium transition-all duration-300 overflow-hidden">
               <span className="relative z-10">Subscribe</span>
-              <span className="absolute inset-0 bg-background transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 z-0"></span>
+              <span className="absolute inset-0 bg-primary transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 z-0"></span>
             </button>
-          </div>
+          </SpotlightCard>
         </div>
         
-        {/* Trust Indicators with animated logos */}
+        {/* Trust Indicators with SpotlightCard effects */}
         <div className={`mt-20 pt-10 border-t border-background/20 transform transition-all duration-1000 ease-out delay-700 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
           <p className="text-background/70 mb-8 text-lg">Trusted by cultural institutions worldwide</p>
-          <div className="flex flex-wrap justify-center items-center gap-10 text-background/80">
-            <div className="flex flex-col items-center group">
-              <div className="w-16 h-16 mb-2 bg-background/10 rounded-2xl flex items-center justify-center text-3xl backdrop-blur-sm transform group-hover:scale-110 transition-transform duration-300">
+          <div className="flex flex-wrap justify-center items-center gap-6 text-text-primary">
+            <SpotlightCard 
+              className="flex flex-col items-center group py-4 px-6"
+              style={{ backgroundColor: '#CEB392' }}
+              spotlightColor="rgba(255, 255, 0, 0.3)"
+            >
+              <div className="w-12 h-12 mb-2 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center text-2xl transform group-hover:scale-110 transition-transform duration-300">
                 🏛️
               </div>
               <span className="text-sm font-medium">UNESCO</span>
-            </div>
-            <div className="flex flex-col items-center group">
-              <div className="w-16 h-16 mb-2 bg-background/10 rounded-2xl flex items-center justify-center text-3xl backdrop-blur-sm transform group-hover:scale-110 transition-transform duration-300">
+            </SpotlightCard>
+            
+            <SpotlightCard 
+              className="flex flex-col items-center group py-4 px-6"
+              style={{ backgroundColor: '#CEB392' }}
+              spotlightColor="rgba(255, 0, 0, 0.3)"
+            >
+              <div className="w-12 h-12 mb-2 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center text-2xl transform group-hover:scale-110 transition-transform duration-300">
                 🏫
               </div>
               <span className="text-sm font-medium">Harvard University</span>
-            </div>
-            <div className="flex flex-col items-center group">
-              <div className="w-16 h-16 mb-2 bg-background/10 rounded-2xl flex items-center justify-center text-3xl backdrop-blur-sm transform group-hover:scale-110 transition-transform duration-300">
+            </SpotlightCard>
+            
+            <SpotlightCard 
+              className="flex flex-col items-center group py-4 px-6"
+              style={{ backgroundColor: '#CEB392' }}
+              spotlightColor="rgba(0, 255, 0, 0.3)"
+            >
+              <div className="w-12 h-12 mb-2 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center text-2xl transform group-hover:scale-110 transition-transform duration-300">
                 🏛️
               </div>
               <span className="text-sm font-medium">British Museum</span>
-            </div>
-            <div className="flex flex-col items-center group">
-              <div className="w-16 h-16 mb-2 bg-background/10 rounded-2xl flex items-center justify-center text-3xl backdrop-blur-sm transform group-hover:scale-110 transition-transform duration-300">
+            </SpotlightCard>
+            
+            <SpotlightCard 
+              className="flex flex-col items-center group py-4 px-6"
+              style={{ backgroundColor: '#CEB392' }}
+              spotlightColor="rgba(255, 165, 0, 0.3)"
+            >
+              <div className="w-12 h-12 mb-2 bg-gradient-to-br from-purple-400 to-pink-500 rounded-xl flex items-center justify-center text-2xl transform group-hover:scale-110 transition-transform duration-300">
                 🌍
               </div>
               <span className="text-sm font-medium">Tourism Boards</span>
-            </div>
+            </SpotlightCard>
           </div>
         </div>
       </div>
