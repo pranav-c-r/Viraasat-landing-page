@@ -4,7 +4,7 @@ import { Renderer, Triangle, Program, Mesh } from 'ogl';
 const Prism = ({
   height = 3.5,
   baseWidth = 5.5,
-  animationType = 'hover',
+  animationType = 'rotate',
   glow = 1,
   offset = { x: 0, y: 0 },
   noise = 0.5,

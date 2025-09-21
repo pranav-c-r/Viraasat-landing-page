@@ -149,15 +149,15 @@ export default function Hero() {
       {/* Prism Background */}
       <div style={{ width: '100%', height: '900px', position: 'absolute', top: 0, left: 0, zIndex: 1 }}>
         <Prism
-          animationType="hover"
-          timeScale={0.5}
+          animationType="rotate"
+          timeScale={1}
           height={3.5}
           baseWidth={5.5}
-          scale={2.6}
-          hueShift={0.16}
+          scale={2}
+          hueShift={0.06}
           colorFrequency={1.8}
           noise={0}
-          glow={1}
+          glow={1.2}
         />
       </div>
 
