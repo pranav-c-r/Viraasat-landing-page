@@ -120,7 +120,8 @@ export default function Impact() {
               style={{ transitionDelay: `${index * 150}ms` }}
             >
               <SpotlightCard 
-                className="text-center h-full bg-white/90 border border-gray-200"
+                className="text-center h-full border border-gray-200"
+                style={{ backgroundColor: '#CEB392' }}
                 spotlightColor={stat.spotlightColor}
               >
                 <div className={`w-16 h-16 mx-auto mb-4 bg-gradient-to-br ${stat.color} rounded-2xl flex items-center justify-center text-2xl text-white`}>
@@ -157,7 +158,8 @@ export default function Impact() {
         {/* Mission Statement with SpotlightCard */}
         <div className={`mb-20 transform transition-all duration-1000 delay-300 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
           <SpotlightCard 
-            className="relative overflow-hidden bg-white/90 border border-gray-200"
+            className="relative overflow-hidden border border-gray-200"
+            style={{ backgroundColor: '#CEB392' }}
             spotlightColor="rgba(255, 165, 0, 0.7)"
           >
             {/* Decorative corner elements */}
@@ -183,7 +185,8 @@ export default function Impact() {
           {testimonials.map((testimonial, index) => (
             <SpotlightCard 
               key={index}
-              className="relative overflow-hidden group hover:shadow-xl transition-all duration-500 bg-white/90 border border-gray-200"
+              className="relative overflow-hidden group hover:shadow-xl transition-all duration-500 border border-gray-200"
+              style={{ backgroundColor: '#CEB392' }}
               spotlightColor={testimonial.spotlightColor}
             >
               {/* Decorative quote mark */}
@@ -209,19 +212,22 @@ export default function Impact() {
           <h3 className="text-2xl font-bold text-text-primary mb-6">Global Reach</h3>
           <div className="flex flex-wrap justify-center gap-6 text-gray-700">
             <SpotlightCard 
-              className="flex items-center px-4 py-2 bg-white/90 border border-gray-200"
+              className="flex items-center px-4 py-2 border border-gray-200"
+              style={{ backgroundColor: '#CEB392' }}
               spotlightColor="rgba(255, 255, 0, 0.7)"
             >
               <span className="mr-2">🌍</span> 45+ Countries
             </SpotlightCard>
             <SpotlightCard 
-              className="flex items-center px-4 py-2 bg-white/90 border border-gray-200"
+              className="flex items-center px-4 py-2 border border-gray-200"
+              style={{ backgroundColor: '#CEB392' }}
               spotlightColor="rgba(255, 0, 0, 0.7)"
             >
               <span className="mr-2">🤝</span> 120+ Partners
             </SpotlightCard>
             <SpotlightCard 
-              className="flex items-center px-4 py-2 bg-white/90 border border-gray-200"
+              className="flex items-center px-4 py-2 border border-gray-200"
+              style={{ backgroundColor: '#CEB392' }}
               spotlightColor="rgba(255, 165, 0, 0.7)"
             >
               <span className="mr-2">📊</span> 4.9/5 Rating
