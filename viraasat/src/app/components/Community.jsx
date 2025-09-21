@@ -2,6 +2,7 @@
 
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
+import SpotlightCard from './SpotlightCard';
 
 // Cultural decorative element component
 const CulturalDecoration = ({ className, delay = 0 }) => {
@@ -70,7 +71,7 @@ const AnimatedAudienceIcon = ({ icon, index }) => {
 const FeatureListItem = ({ feature, index }) => {
   return (
     <motion.li 
-      className="flex items-center text-text-secondary"
+      className="flex items-center text-gray-700"
       initial={{ opacity: 0, x: -20 }}
       whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true, margin: "-10%" }}
@@ -91,87 +92,80 @@ const FeatureListItem = ({ feature, index }) => {
   );
 };
 
-// Audience card component
+// Audience card component with SpotlightCard
 const AudienceCard = ({ audience, index }) => {
   const cardRef = useRef(null);
   const isInView = useInView(cardRef, { once: true, margin: "-10%" });
   
+  const spotlightColors = [
+    'rgba(255, 255, 0, 0.7)',     // Yellow for Schools
+    'rgba(255, 0, 0, 0.7)',       // Red for Tourists 
+    'rgba(255, 165, 0, 0.7)'      // Orange for Communities
+  ];
+  
   return (
     <motion.div
       ref={cardRef}
-      className="bg-surface/80 p-8 rounded-2xl border border-white/10 backdrop-blur-sm hover:backdrop-blur-md transition-all duration-300 relative overflow-hidden group"
       initial={{ opacity: 0, y: 50 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, delay: index * 0.2 }}
       whileHover={{ 
-        y: -8, 
-        boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+        y: -8,
         transition: { duration: 0.3 }
       }}
     >
-      {/* Subtle cultural pattern overlay on hover */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-        <svg width="100%" height="100%" className="absolute inset-0">
-          <pattern id={`community-pattern-${index}`} x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-            <circle cx="5" cy="5" r="1" fill="currentColor" opacity="0.1"/>
-            <path d="M20,0 L40,20 L20,40 L0,20 Z" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.1"/>
-          </pattern>
-          <rect x="0" y="0" width="100%" height="100%" fill={`url(#community-pattern-${index})`} />
-        </svg>
-      </div>
-      
-      {/* Animated border effect on hover */}
-      <div className="absolute inset-0 rounded-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-        <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-primary/10 rounded-2xl blur-sm group-hover:blur-md transition-all duration-300"></div>
-      </div>
-      
-      <AnimatedAudienceIcon icon={audience.icon} index={index} />
-      
-      <motion.h3 
-        className="text-2xl font-bold text-text-primary mb-4 text-center"
-        initial={{ opacity: 0 }}
-        animate={isInView ? { opacity: 1 } : {}}
-        transition={{ duration: 0.5, delay: index * 0.2 + 0.1 }}
+      <SpotlightCard 
+        className="h-full bg-white/90 backdrop-blur-sm hover:backdrop-blur-md transition-all duration-300 border border-gray-200"
+        spotlightColor={spotlightColors[index]}
       >
-        {audience.title}
-      </motion.h3>
-      
-      <motion.p 
-        className="text-text-secondary mb-6 text-center"
-        initial={{ opacity: 0 }}
-        animate={isInView ? { opacity: 1 } : {}}
-        transition={{ duration: 0.5, delay: index * 0.2 + 0.2 }}
-      >
-        {audience.description}
-      </motion.p>
-      
-      {/* Features List */}
-      <ul className="space-y-2 mb-8">
-        {audience.features.map((feature, featureIndex) => (
-          <FeatureListItem key={featureIndex} feature={feature} index={featureIndex} />
-        ))}
-      </ul>
-      
-      {/* CTA Button */}
-      <motion.button 
-        className="w-full bg-primary hover:bg-primary/90 text-background py-3 rounded-lg font-semibold transition-all relative overflow-hidden group"
-        initial={{ opacity: 0 }}
-        animate={isInView ? { opacity: 1 } : {}}
-        transition={{ duration: 0.5, delay: index * 0.2 + 0.6 }}
-        whileHover={{ scale: 1.03 }}
-        whileTap={{ scale: 0.98 }}
-      >
-        <span className="relative z-10">{audience.cta}</span>
-        <motion.div 
-          className="absolute inset-0 bg-primary-dark opacity-0 group-hover:opacity-100 transition-opacity"
-          initial={false}
-        />
-      </motion.button>
+        <AnimatedAudienceIcon icon={audience.icon} index={index} />
+        
+        <motion.h3 
+          className="text-2xl font-bold text-black mb-4 text-center"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.5, delay: index * 0.2 + 0.1 }}
+        >
+          {audience.title}
+        </motion.h3>
+        
+        <motion.p 
+          className="text-gray-700 mb-6 text-center"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.5, delay: index * 0.2 + 0.2 }}
+        >
+          {audience.description}
+        </motion.p>
+        
+        {/* Features List */}
+        <ul className="space-y-2 mb-8">
+          {audience.features.map((feature, featureIndex) => (
+            <FeatureListItem key={featureIndex} feature={feature} index={featureIndex} />
+          ))}
+        </ul>
+        
+        {/* CTA Button */}
+        <motion.button 
+          className="w-full bg-primary hover:bg-primary/90 text-white py-3 rounded-lg font-semibold transition-all relative overflow-hidden group"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.5, delay: index * 0.2 + 0.6 }}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <span className="relative z-10">{audience.cta}</span>
+          <motion.div 
+            className="absolute inset-0 bg-primary-dark opacity-0 group-hover:opacity-100 transition-opacity"
+            initial={false}
+          />
+        </motion.button>
+      </SpotlightCard>
     </motion.div>
   );
 };
 
-// Partnership section component
+// Partnership section component with SpotlightCard
 const PartnershipSection = () => {
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-10%" });
@@ -179,65 +173,59 @@ const PartnershipSection = () => {
   return (
     <motion.div 
       ref={sectionRef}
-      className="mt-16 bg-surface/80 p-8 rounded-2xl border border-white/10 backdrop-blur-sm relative overflow-hidden"
+      className="mt-16"
       initial={{ opacity: 0, y: 50 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.7, delay: 0.6 }}
     >
-      {/* Cultural pattern background */}
-      <div className="absolute inset-0 opacity-5 pointer-events-none">
-        <svg width="100%" height="100%" className="absolute inset-0">
-          <pattern id="partnership-pattern" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
-            <path d="M0,0 L60,60 M60,0 L0,60" stroke="currentColor" strokeWidth="1"/>
-            <circle cx="30" cy="30" r="10" fill="none" stroke="currentColor" strokeWidth="1"/>
-          </pattern>
-          <rect x="0" y="0" width="100%" height="100%" fill="url(#partnership-pattern)" />
-        </svg>
-      </div>
-      
-      <div className="max-w-4xl mx-auto text-center relative z-10">
-        <motion.h3 
-          className="text-3xl font-bold text-text-primary mb-4"
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.5, delay: 0.8 }}
-        >
-          Partner with Viraasat
-        </motion.h3>
-        
-        <motion.p 
-          className="text-text-secondary text-lg mb-8"
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.5, delay: 1.0 }}
-        >
-          Join museums, tourism boards, and educational institutions in preserving and sharing cultural heritage. 
-          Together, we can make history accessible to everyone.
-        </motion.p>
-        
-        <motion.div 
-          className="flex flex-col sm:flex-row gap-4 justify-center"
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.5, delay: 1.2 }}
-        >
-          <motion.button 
-            className="bg-primary hover:bg-primary/90 text-background px-6 py-3 rounded-lg font-semibold transition-all"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+      <SpotlightCard 
+        className="bg-white/90 backdrop-blur-sm border border-gray-200"
+        spotlightColor="rgba(255, 165, 0, 0.7)"
+      >
+        <div className="max-w-4xl mx-auto text-center">
+          <motion.h3 
+            className="text-3xl font-bold text-black mb-4"
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : {}}
+            transition={{ duration: 0.5, delay: 0.8 }}
           >
-            Become a Partner
-          </motion.button>
+            Partner with Viraasat
+          </motion.h3>
           
-          <motion.button 
-            className="border-2 border-primary text-primary hover:bg-primary hover:text-background px-6 py-3 rounded-lg font-semibold transition-all"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <motion.p 
+            className="text-gray-700 text-lg mb-8"
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : {}}
+            transition={{ duration: 0.5, delay: 1.0 }}
           >
-            Learn More
-          </motion.button>
-        </motion.div>
-      </div>
+            Join museums, tourism boards, and educational institutions in preserving and sharing cultural heritage. 
+            Together, we can make history accessible to everyone.
+          </motion.p>
+          
+          <motion.div 
+            className="flex flex-col sm:flex-row gap-4 justify-center"
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : {}}
+            transition={{ duration: 0.5, delay: 1.2 }}
+          >
+            <motion.button 
+              className="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-semibold transition-all"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Become a Partner
+            </motion.button>
+            
+            <motion.button 
+              className="border-2 border-primary text-primary hover:bg-primary hover:text-white px-6 py-3 rounded-lg font-semibold transition-all"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Learn More
+            </motion.button>
+          </motion.div>
+        </div>
+      </SpotlightCard>
     </motion.div>
   );
 };
