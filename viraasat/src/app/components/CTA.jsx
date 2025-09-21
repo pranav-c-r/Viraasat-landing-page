@@ -184,8 +184,8 @@ export default function CTA() {
               className="bg-[#CEB392] backdrop-blur-sm border border-gray-200 flex flex-col items-center group py-4 px-6"
               spotlightColor="rgba(255, 255, 0, 0.7)"
             >
-              <div className="w-12 h-12 mb-2 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center text-2xl transform group-hover:scale-110 transition-transform duration-300">
-                🏛️
+              <div className="w-12 h-12 mb-2 rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300 overflow-hidden">
+                <img src="https://banner2.cleanpng.com/20180805/viz/f10b41f768d3c6109b2a38442a1efaf9.webp" alt="UNESCO" loading="lazy" className="w-full h-full object-contain" />
               </div>
               <span className="text-sm font-medium">UNESCO</span>
             </SpotlightCard>
@@ -194,8 +194,8 @@ export default function CTA() {
               className="bg-[#CEB392] backdrop-blur-sm border border-gray-200 flex flex-col items-center group py-4 px-6"
               spotlightColor="rgba(255, 0, 0, 0.7)"
             >
-              <div className="w-12 h-12 mb-2 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center text-2xl transform group-hover:scale-110 transition-transform duration-300">
-                🏫
+              <div className="w-12 h-12 mb-2 rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300 overflow-hidden">
+                <img src="https://banner2.cleanpng.com/lnd/20241121/he/042e5687c6e01b688391632009eecc.webp" alt="Harvard University" loading="lazy" className="w-full h-full object-contain" />
               </div>
               <span className="text-sm font-medium">Harvard University</span>
             </SpotlightCard>
@@ -204,8 +204,8 @@ export default function CTA() {
               className="bg-[#CEB392] backdrop-blur-sm border border-gray-200 flex flex-col items-center group py-4 px-6"
               spotlightColor="rgba(255, 165, 0, 0.7)"
             >
-              <div className="w-12 h-12 mb-2 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center text-2xl transform group-hover:scale-110 transition-transform duration-300">
-                🏛️
+              <div className="w-12 h-12 mb-2 rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300 overflow-hidden">
+                <img src="https://banner2.cleanpng.com/20180408/hoe/kisspng-british-museum-victoria-and-albert-museum-royal-on-norouz-5acad40807d121.9676857215232419920321.jpg" alt="British Museum" loading="lazy" className="w-full h-full object-contain" />
               </div>
               <span className="text-sm font-medium">British Museum</span>
             </SpotlightCard>
@@ -214,8 +214,8 @@ export default function CTA() {
               className="bg-[#CEB392] backdrop-blur-sm border border-gray-200 flex flex-col items-center group py-4 px-6"
               spotlightColor="rgba(255, 255, 0, 0.7)"
             >
-              <div className="w-12 h-12 mb-2 bg-gradient-to-br from-purple-400 to-pink-500 rounded-xl flex items-center justify-center text-2xl transform group-hover:scale-110 transition-transform duration-300">
-                🌍
+              <div className="w-12 h-12 mb-2 rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300 overflow-hidden">
+                <img src="https://banner2.cleanpng.com/lnd/20240422/jxb/transparent-city-skyline-colorful-city-skyline-painting-with-modern-bridge6626802e3cd026.98908835.webp" alt="Tourism Boards" loading="lazy" className="w-full h-full object-contain" />
               </div>
               <span className="text-sm font-medium">Tourism Boards</span>
             </SpotlightCard>

@@ -2,6 +2,20 @@
 
 import { motion, useInView, useMotionValue, useTransform } from 'framer-motion';
 import { useRef, useState, useEffect } from 'react';
+import {
+  AlertTriangle,
+  Lightbulb,
+  Camera,
+  Zap,
+  Smartphone,
+  Mic,
+  Rocket,
+  Luggage,
+  GraduationCap,
+  BookOpen,
+  Landmark,
+  Globe
+} from 'lucide-react';
 
 const SpotlightCard = ({ children, className = '', spotlightColor = 'rgba(255, 255, 255, 0.25)', style = {} }) => {
   const divRef = useRef(null);
@@ -74,18 +88,31 @@ const HeritageMonument = ({ monument, delay = 0, onHover }) => {
       onHoverEnd={() => setIsHovered(false)}
     >
       <SpotlightCard
-        className="bg-[#CEB392] backdrop-blur-sm border border-gray-200 h-32 w-32 flex items-center justify-center transform transition-all duration-300"
+        className="bg-[#CEB392] backdrop-blur-sm border border-gray-200 h-32 w-32 flex items-center justify-center overflow-hidden rounded-2xl transform transition-all duration-300"
         spotlightColor="rgba(255, 165, 0, 0.7)"
       >
-        <motion.div
-          className="text-4xl transform transition-all duration-300"
-          animate={{ 
-            scale: isHovered ? 1.2 : 1,
-            rotate: isHovered ? 360 : 0
-          }}
-        >
-          {monument.icon}
-        </motion.div>
+        {monument.imageUrl ? (
+          <motion.img
+            src={monument.imageUrl}
+            alt={monument.name}
+            className="w-full h-full object-cover"
+            animate={{
+              scale: isHovered ? 1.05 : 1,
+              rotate: isHovered ? 3 : 0
+            }}
+            transition={{ type: 'spring', stiffness: 200 }}
+          />
+        ) : (
+          <motion.div
+            className="text-4xl transform transition-all duration-300"
+            animate={{ 
+              scale: isHovered ? 1.2 : 1,
+              rotate: isHovered ? 360 : 0
+            }}
+          >
+            {monument.icon}
+          </motion.div>
+        )}
         
         <motion.div
           className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-primary text-background px-3 py-1 rounded-full text-xs font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300"
@@ -104,25 +131,25 @@ const ProcessTimeline = () => {
   const [activeStep, setActiveStep] = useState(0);
   const steps = [
     {
-      icon: "📸",
+      icon: <Camera className="w-8 h-8 text-yellow-500" />,
       title: "Digitize",
       description: "Create lightweight 3D models using photogrammetry and handcrafted modeling",
       color: "rgba(255, 255, 0, 0.7)"
     },
     {
-      icon: "⚡",
+      icon: <Zap className="w-8 h-8 text-red-500" />,
       title: "Optimize", 
       description: "Smart compression ensures smooth performance under 10MB per preview",
       color: "rgba(255, 0, 0, 0.7)"
     },
     {
-      icon: "📱",
+      icon: <Smartphone className="w-8 h-8 text-orange-500" />,
       title: "Experience Offline",
       description: "Progressive downloads and local caching work anywhere—even with patchy connectivity",
       color: "rgba(255, 165, 0, 0.7)"
     },
     {
-      icon: "🎙️",
+      icon: <Mic className="w-8 h-8 text-yellow-500" />,
       title: "Storytelling First",
       description: "Multilingual narratives woven into each AR experience",
       color: "rgba(255, 255, 0, 0.7)"
@@ -249,11 +276,26 @@ export default function About() {
   const [selectedMonument, setSelectedMonument] = useState(null);
   
   const monuments = [
-    { icon: "🏛️", name: "Red Fort" },
-    { icon: "🕌", name: "Taj Mahal" },
-    { icon: "⛩️", name: "Gateway of India" },
-    { icon: "🏰", name: "Mysore Palace" },
-    { icon: "🗿", name: "Ajanta Caves" }
+    {
+      name: "Red Fort",
+      imageUrl: "https://images.pexels.com/photos/33928936/pexels-photo-33928936.jpeg"
+    },
+    {
+      name: "Taj Mahal",
+      imageUrl: "https://images.pexels.com/photos/1603650/pexels-photo-1603650.jpeg"
+    },
+    {
+      name: "Gateway of India",
+      imageUrl: "https://plus.unsplash.com/premium_photo-1697730429201-381b71f61427?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    },
+    {
+      name: "Mysore Palace",
+      imageUrl: "https://images.pexels.com/photos/17353476/pexels-photo-17353476.jpeg"
+    },
+    {
+      name: "Ajanta Caves",
+      imageUrl: "https://plus.unsplash.com/premium_photo-1697729588019-20a1f5a325d1?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    }
   ];
 
   const userGroups = [
@@ -366,7 +408,7 @@ export default function About() {
               spotlightColor="rgba(255, 0, 0, 0.7)"
             >
               <div className="flex items-center gap-4 mb-6">
-                <div className="text-4xl">⚠️</div>
+                <AlertTriangle className="w-10 h-10 text-yellow-600 shrink-0" aria-hidden="true" />
                 <h2 className="text-3xl font-bold text-text-primary">The Problem</h2>
               </div>
               
@@ -411,7 +453,7 @@ export default function About() {
               spotlightColor="rgba(255, 165, 0, 0.7)"
             >
               <div className="flex items-center gap-4 mb-6">
-                <div className="text-4xl">💡</div>
+                <Lightbulb className="w-10 h-10 text-amber-500 shrink-0" aria-hidden="true" />
                 <h2 className="text-3xl font-bold text-text-primary">Our Solution</h2>
               </div>
               
@@ -430,19 +472,19 @@ export default function About() {
               {/* Solution Features */}
               <div className="grid grid-cols-2 gap-3 mt-8">
                 <div className="flex items-center gap-2 p-2 bg-green-100 rounded-lg">
-                  <span className="text-green-600">📱</span>
+                  <Smartphone className="w-5 h-5 text-green-600" />
                   <span className="text-xs text-green-600 font-medium">Offline-First</span>
                 </div>
                 <div className="flex items-center gap-2 p-2 bg-blue-100 rounded-lg">
-                  <span className="text-blue-600">🌍</span>
+                  <Globe className="w-5 h-5 text-blue-600" />
                   <span className="text-xs text-blue-600 font-medium">Multilingual</span>
                 </div>
                 <div className="flex items-center gap-2 p-2 bg-purple-100 rounded-lg">
-                  <span className="text-purple-600">⚡</span>
+                  <Zap className="w-5 h-5 text-purple-600" />
                   <span className="text-xs text-purple-600 font-medium">Lightweight</span>
                 </div>
                 <div className="flex items-center gap-2 p-2 bg-pink-100 rounded-lg">
-                  <span className="text-pink-600">🎭</span>
+                  <BookOpen className="w-5 h-5 text-pink-600" />
                   <span className="text-xs text-pink-600 font-medium">Story-Rich</span>
                 </div>
               </div>
