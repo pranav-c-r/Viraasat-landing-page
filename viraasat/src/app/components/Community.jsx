@@ -92,6 +92,11 @@ const FeatureListItem = ({ feature, index }) => {
   );
 };
 
+// Function to handle navigation to community webapp
+const handleNavigateToApp = () => {
+  window.open('https://viraasat-community.vercel.app/', '_blank');
+};
+
 // Audience card component with SpotlightCard
 const AudienceCard = ({ audience, index }) => {
   const cardRef = useRef(null);
@@ -147,12 +152,13 @@ const AudienceCard = ({ audience, index }) => {
         
         {/* CTA Button */}
         <motion.button 
-          className="w-full bg-primary hover:bg-primary/90 text-[#CEB392] py-3 rounded-lg font-semibold transition-all relative overflow-hidden group"
+          className="w-full bg-primary hover:bg-primary/90 text-[#CEB392] py-3 rounded-lg font-semibold transition-all relative overflow-hidden group cursor-pointer"
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.5, delay: index * 0.2 + 0.6 }}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.98 }}
+          onClick={handleNavigateToApp}
         >
           <span className="relative z-10">{audience.cta}</span>
           <motion.div 
@@ -209,17 +215,19 @@ const PartnershipSection = () => {
             transition={{ duration: 0.5, delay: 1.2 }}
           >
             <motion.button 
-              className="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-semibold transition-all"
+              className="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-semibold transition-all cursor-pointer"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={handleNavigateToApp}
             >
               Become a Partner
             </motion.button>
             
             <motion.button 
-              className="border-2 border-primary text-primary hover:bg-primary hover:text-white px-6 py-3 rounded-lg font-semibold transition-all"
+              className="border-2 border-primary text-primary hover:bg-primary hover:text-white px-6 py-3 rounded-lg font-semibold transition-all cursor-pointer"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={handleNavigateToApp}
             >
               Learn More
             </motion.button>
