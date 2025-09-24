@@ -1,75 +1,279 @@
 'use client';
-
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
-import { OrbitControls, useGLTF, Sky, Environment, Text, useTexture, Stars, Cloud, Html } from '@react-three/drei';
+import { OrbitControls, useGLTF, Environment, Text, useTexture, Stars, Cloud, Html } from '@react-three/drei';
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { Vector3, Euler, Box3, Sphere, Raycaster, Mesh, MathUtils, Color } from 'three';
-import { Camera, Settings, Sun, Moon, Volume2, VolumeX, Eye, EyeOff } from 'lucide-react';
+import { Camera, Settings, Sun, Moon, Volume2, VolumeX, Eye, EyeOff, CloudRain, CloudLightning } from 'lucide-react';
 
-// Audio Manager for spatial audio
+// Audio Manager with perfect temple-themed music
 class AudioManager {
   constructor() {
     this.sounds = {};
-    this.audioContext = null;
-    this.listener = null;
     this.enabled = true;
-    this.ambientVolume = 0.3;
+    this.ambientVolume = 0.4;
     this.effectsVolume = 0.5;
+    this.audioElement = null;
+    this.isInitialized = false;
+    this.audioContext = null;
   }
-
-  init() {
-    if (typeof window !== 'undefined' && 'AudioContext' in window) {
-      this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  async init() {
+    if (typeof window !== 'undefined' && !this.isInitialized) {
+      try {
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        this.audioElement = new Audio();
+        // PERFECT TEMPLE MUSIC: Mystical, ethereal temple ambience
+        this.audioElement.src = 'https://cdn.pixabay.com/download/audio/2022/08/04/audio_2dde668d05.mp3?filename=mystical-temple-ambience-133032.mp3';
+        this.audioElement.loop = true;
+        this.audioElement.volume = this.ambientVolume;
+        this.audioElement.crossOrigin = 'anonymous';
+        this.audioElement.addEventListener('canplaythrough', () => {
+          console.log('Temple audio loaded successfully');
+        });
+        this.audioElement.addEventListener('error', (e) => {
+          console.log('Primary audio failed, trying mystical alternative');
+          // Backup: Another temple-themed track
+          this.audioElement.src = 'https://cdn.pixabay.com/download/audio/2023/02/28/audio_c77dc6adec.mp3?filename=ethereal-ambience-124738.mp3';
+          this.audioElement.load();
+        });
+        this.isInitialized = true;
+        console.log('Temple audio system initialized');
+      } catch (error) {
+        console.error('Audio initialization error:', error);
+        this.createBackupAudio();
+      }
     }
   }
-
-  playAmbient(type) {
-    // Simulate ambient sounds (in real implementation, you'd load actual audio files)
-    if (this.enabled) {
-      console.log(`Playing ambient: ${type}`);
+  createBackupAudio() {
+    if (this.audioContext) {
+      try {
+        // Create mystical backup tones
+        const oscillator1 = this.audioContext.createOscillator();
+        const oscillator2 = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+        oscillator1.connect(gainNode);
+        oscillator2.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+        oscillator1.frequency.setValueAtTime(220, this.audioContext.currentTime); // Low mystical tone
+        oscillator2.frequency.setValueAtTime(440, this.audioContext.currentTime); // Higher harmonic
+        oscillator1.type = 'sine';
+        oscillator2.type = 'triangle';
+        gainNode.gain.setValueAtTime(0.05, this.audioContext.currentTime);
+        oscillator1.start();
+        oscillator2.start();
+        this.backupOscillator = oscillator1;
+        this.backupOscillator2 = oscillator2;
+        this.backupGain = gainNode;
+      } catch (error) {
+        console.error('Backup audio failed:', error);
+      }
     }
   }
-
-  playEffect(type, position) {
-    if (this.enabled) {
-      console.log(`Playing effect: ${type} at position:`, position);
+  async playAmbient() {
+    if (this.enabled && this.isInitialized) {
+      try {
+        if (this.audioContext && this.audioContext.state === 'suspended') {
+          await this.audioContext.resume();
+        }
+        if (this.audioElement) {
+          const playPromise = this.audioElement.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(e => {
+              console.log('Audio play error, using backup mystical tones:', e);
+              this.createBackupAudio();
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error playing audio:', error);
+        this.createBackupAudio();
+      }
     }
   }
-
+  stopAmbient() {
+    if (this.audioElement) {
+      this.audioElement.pause();
+    }
+    if (this.backupGain) {
+      this.backupGain.gain.setValueAtTime(0, this.audioContext.currentTime);
+    }
+  }
   setVolume(type, volume) {
-    if (type === 'ambient') this.ambientVolume = volume;
+    if (type === 'ambient') {
+      this.ambientVolume = volume;
+      if (this.audioElement) {
+        this.audioElement.volume = volume;
+      }
+      if (this.backupGain) {
+        this.backupGain.gain.setValueAtTime(volume * 0.05, this.audioContext.currentTime);
+      }
+    }
     if (type === 'effects') this.effectsVolume = volume;
   }
-
   toggle() {
     this.enabled = !this.enabled;
+    if (this.enabled) {
+      this.playAmbient();
+    } else {
+      this.stopAmbient();
+    }
     return this.enabled;
+  }
+  playEffect(type, position) {
+    console.log(`Playing effect: ${type} at position:`, position);
   }
 }
 
 // Weather and Time System
-// Pure state hook
 function useTimeOfDay() {
-  const [timeOfDay, setTimeOfDay] = useState(0.6); // 0 = night, 1 = day
-  const [weather, setWeather] = useState('clear');
-  const [isPlaying, setIsPlaying] = useState(false);
-
+  const [timeOfDay, setTimeOfDay] = useState(0.5);
+  const [timeMode, setTimeMode] = useState('cycle');
+  const [isPlaying, setIsPlaying] = useState(true);
   const cycleTime = () => setIsPlaying(!isPlaying);
-
-  return { timeOfDay, setTimeOfDay, weather, setWeather, cycleTime, isPlaying };
+  const setDayTime = () => {
+    setTimeMode('day');
+    setTimeOfDay(0.5);
+    setIsPlaying(false);
+  };
+  const setNightTime = () => {
+    setTimeMode('night');
+    setTimeOfDay(0.0);
+    setIsPlaying(false);
+  };
+  const setCycleMode = () => {
+    setTimeMode('cycle');
+    setIsPlaying(true);
+  };
+  return { 
+    timeOfDay, 
+    setTimeOfDay, 
+    timeMode,
+    setDayTime,
+    setNightTime,
+    setCycleMode,
+    cycleTime, 
+    isPlaying 
+  };
 }
 
-
-// Component to update time using useFrame
-function TimeOfDayUpdater({ timeOfDay, setTimeOfDay, isPlaying }) {
+// Component to update time using useFrame - 20 second cycle for even smoother transitions
+function TimeOfDayUpdater({ timeOfDay, setTimeOfDay, isPlaying, timeMode }) {
   useFrame((state, delta) => {
-    if (isPlaying) {
-      setTimeOfDay(prev => (prev + delta * 0.05) % 1); // 20 second cycle
+    if (isPlaying && timeMode === 'cycle') {
+      setTimeOfDay(prev => (prev + delta * 0.05) % 1); // 20 second cycle for ultra-smooth transitions
     }
   });
   return null;
 }
 
+// Custom Sky Component with ultra-smooth transitions
+function CustomSky({ timeOfDay, timeMode }) {
+  const meshRef = useRef();
+  const smoothStep = (edge0, edge1, x) => {
+    const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0)));
+    return t * t * (3 - 2 * t);
+  };
+  const skyColor = useMemo(() => {
+    if (timeMode === 'night') {
+      return new Color(0x0a0a20); // Deep night blue
+    } else if (timeMode === 'day') {
+      return new Color(0x87ceeb); // Sky blue
+    }
+    const cycle = timeOfDay;
+    const nightColor = new Color(0x0a0a20);
+    const dawnColor = new Color(0x4a4a80);
+    const sunriseColor = new Color(0xffa500);
+    const dayColor = new Color(0x87ceeb);
+    const sunsetColor = new Color(0xff6347);
+    const duskColor = new Color(0x2f2f5f);
+    if (cycle < 0.1) {
+      return nightColor;
+    } else if (cycle < 0.2) {
+      const factor = smoothStep(0.1, 0.2, cycle);
+      return nightColor.clone().lerp(dawnColor, factor);
+    } else if (cycle < 0.3) {
+      const factor = smoothStep(0.2, 0.3, cycle);
+      return dawnColor.clone().lerp(sunriseColor, factor);
+    } else if (cycle < 0.4) {
+      const factor = smoothStep(0.3, 0.4, cycle);
+      return sunriseColor.clone().lerp(dayColor, factor);
+    } else if (cycle < 0.6) {
+      return dayColor;
+    } else if (cycle < 0.7) {
+      const factor = smoothStep(0.6, 0.7, cycle);
+      return dayColor.clone().lerp(sunsetColor, factor);
+    } else if (cycle < 0.8) {
+      const factor = smoothStep(0.7, 0.8, cycle);
+      return sunsetColor.clone().lerp(duskColor, factor);
+    } else if (cycle < 0.9) {
+      const factor = smoothStep(0.8, 0.9, cycle);
+      return duskColor.clone().lerp(nightColor, factor);
+    } else {
+      return nightColor;
+    }
+  }, [timeOfDay, timeMode]);
+  return (
+    <mesh ref={meshRef} position={[0, 0, 0]} scale={[500, 500, 500]}>
+      <sphereGeometry args={[1, 32, 32]} />
+      <meshBasicMaterial color={skyColor} side={2} />
+    </mesh>
+  );
+}
+
+// Tree Component for realistic environment
+function Tree({ position, size = 1, collisionDetector }) {
+  const groupRef = useRef();
+  useEffect(() => {
+    if (collisionDetector && groupRef.current) {
+      collisionDetector.addCollisionObject(groupRef.current);
+    }
+  }, [collisionDetector]);
+  return (
+    <group ref={groupRef} position={position} scale={[size, size, size]}>
+      {/* Trunk */}
+      <mesh position={[0, 1.5, 0]} castShadow receiveShadow>
+        <cylinderGeometry args={[0.3, 0.4, 3, 8]} />
+        <meshStandardMaterial color="#8B4513" roughness={0.9} />
+      </mesh>
+      {/* Leaves */}
+      <mesh position={[0, 4, 0]} castShadow receiveShadow>
+        <sphereGeometry args={[1.5, 8, 6]} />
+        <meshStandardMaterial color="#228B22" roughness={0.8} />
+      </mesh>
+    </group>
+  );
+}
+
+// Forest component with scattered trees
+function Forest({ collisionDetector }) {
+  const trees = useMemo(() => {
+    return [
+      // Around the temple
+      { position: [12, 0, 5], size: 1.2 },
+      { position: [-10, 0, 8], size: 1.1 },
+      { position: [8, 0, -6], size: 0.9 },
+      { position: [-7, 0, -8], size: 1.3 },
+      // Perimeter trees
+      { position: [25, 0, 15], size: 1.4 },
+      { position: [-20, 0, 18], size: 1.1 },
+      { position: [18, 0, -12], size: 0.8 },
+      { position: [-15, 0, -14], size: 1.2 },
+      { position: [30, 0, -5], size: 1.0 },
+      { position: [-25, 0, 5], size: 1.3 },
+    ];
+  }, []);
+  return (
+    <group>
+      {trees.map((tree, index) => (
+        <Tree 
+          key={index} 
+          position={tree.position} 
+          size={tree.size}
+          collisionDetector={collisionDetector}
+        />
+      ))}
+    </group>
+  );
+}
 
 // Particle System Component
 function Particles({ type, count = 100 }) {
@@ -81,20 +285,18 @@ function Particles({ type, count = 100 }) {
       const y = Math.random() * 10 + 1;
       const z = (Math.random() - 0.5) * 50;
       const speed = Math.random() * 0.02 + 0.01;
-      temp.push({ position: [x, y, z], speed, offset: Math.random() * Math.PI * 2 });
+      const offset = Math.random() * Math.PI * 2;
+      temp.push({ position: [x, y, z], speed, offset });
     }
     return temp;
   }, [count]);
-
   useFrame((state) => {
     if (mesh.current) {
       particles.forEach((particle, i) => {
         const i3 = i * 3;
         if (type === 'dust') {
-          // Floating dust motes
           mesh.current.geometry.attributes.position.array[i3 + 1] += Math.sin(state.clock.elapsedTime + particle.offset) * 0.001;
         } else if (type === 'fireflies') {
-          // Fireflies floating around
           mesh.current.geometry.attributes.position.array[i3] += Math.sin(state.clock.elapsedTime * 0.5 + particle.offset) * 0.02;
           mesh.current.geometry.attributes.position.array[i3 + 1] += Math.cos(state.clock.elapsedTime * 0.3 + particle.offset) * 0.01;
         }
@@ -102,7 +304,6 @@ function Particles({ type, count = 100 }) {
       mesh.current.geometry.attributes.position.needsUpdate = true;
     }
   });
-
   return (
     <points ref={mesh}>
       <bufferGeometry>
@@ -139,13 +340,11 @@ function Birds() {
       offset: Math.random() * Math.PI * 2
     }));
   }, []);
-
   useFrame((state) => {
     birds.forEach((bird, i) => {
       const x = Math.cos(state.clock.elapsedTime * bird.speed + bird.offset) * bird.radius + bird.position[0];
       const z = Math.sin(state.clock.elapsedTime * bird.speed + bird.offset) * bird.radius + bird.position[2];
       const y = bird.position[1] + Math.sin(state.clock.elapsedTime * 2 + bird.offset) * 0.5;
-      
       if (groupRef.current?.children[i]) {
         groupRef.current.children[i].position.set(x, y, z);
         groupRef.current.children[i].rotation.y = Math.atan2(
@@ -155,7 +354,6 @@ function Birds() {
       }
     });
   });
-
   return (
     <group ref={groupRef}>
       {birds.map((bird) => (
@@ -168,41 +366,115 @@ function Birds() {
   );
 }
 
-// Enhanced Environment with dynamic lighting
-function EnhancedEnvironment({ timeOfDay, weather }) {
+// Enhanced Environment with ultra-smooth dynamic lighting
+function EnhancedEnvironment({ timeOfDay, timeMode }) {
+  const smoothStep = (edge0, edge1, x) => {
+    const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0)));
+    return t * t * (3 - 2 * t);
+  };
   const sunPosition = useMemo(() => {
-    const angle = timeOfDay * Math.PI * 2;
+    if (timeMode === 'day') {
+      return [50, 50, 50];
+    } else if (timeMode === 'night') {
+      return [-50, 20, -50];
+    }
+    const cycle = timeOfDay;
+    let angle;
+    if (cycle < 0.2) {
+      angle = -Math.PI * 0.3;
+    } else if (cycle < 0.8) {
+      const dayProgress = (cycle - 0.2) / 0.6;
+      angle = -Math.PI * 0.3 + dayProgress * Math.PI * 1.3;
+    } else {
+      angle = Math.PI * 1.0;
+    }
     return [
-      Math.cos(angle) * 100,
-      Math.sin(angle) * 50 + 20,
-      Math.sin(angle) * 100
+      Math.cos(angle) * 80,
+      Math.max(Math.sin(angle) * 60 + 25, 15),
+      Math.sin(angle) * 80
     ];
-  }, [timeOfDay]);
-
+  }, [timeOfDay, timeMode]);
   const sunColor = useMemo(() => {
     const color = new Color();
-    if (timeOfDay < 0.2 || timeOfDay > 0.8) {
-      // Night/twilight
-      color.setHSL(0.6, 0.8, 0.3);
-    } else if (timeOfDay < 0.3 || timeOfDay > 0.7) {
-      // Dawn/dusk
-      color.setHSL(0.08, 0.9, 0.6);
+    if (timeMode === 'night') {
+      color.setHSL(0.65, 0.4, 0.3);
+    } else if (timeMode === 'day') {
+      color.setHSL(0.1, 0.1, 1.0);
     } else {
-      // Day
-      color.setHSL(0.15, 0.1, 1);
+      const cycle = timeOfDay;
+      if (cycle < 0.1) {
+        color.setHSL(0.65, 0.4, 0.3);
+      } else if (cycle < 0.2) {
+        const factor = smoothStep(0.1, 0.2, cycle);
+        color.setHSL(0.65 - factor * 0.15, 0.4 + factor * 0.3, 0.3 + factor * 0.2);
+      } else if (cycle < 0.3) {
+        const factor = smoothStep(0.2, 0.3, cycle);
+        color.setHSL(0.08, 0.8, 0.6 + factor * 0.3);
+      } else if (cycle < 0.4) {
+        const factor = smoothStep(0.3, 0.4, cycle);
+        color.setHSL(0.08 + factor * 0.02, 0.8 - factor * 0.7, 0.9 + factor * 0.1);
+      } else if (cycle < 0.6) {
+        color.setHSL(0.1, 0.1, 1.0);
+      } else if (cycle < 0.7) {
+        const factor = smoothStep(0.6, 0.7, cycle);
+        color.setHSL(0.1 - factor * 0.02, 0.1 + factor * 0.7, 1.0 - factor * 0.1);
+      } else if (cycle < 0.8) {
+        const factor = smoothStep(0.7, 0.8, cycle);
+        color.setHSL(0.05 - factor * 0.02, 0.8, 0.7 - factor * 0.2);
+      } else if (cycle < 0.9) {
+        const factor = smoothStep(0.8, 0.9, cycle);
+        color.setHSL(0.65 + factor * 0.1, 0.6 - factor * 0.2, 0.5 - factor * 0.2);
+      } else {
+        color.setHSL(0.65, 0.4, 0.3);
+      }
     }
     return color;
-  }, [timeOfDay]);
-
+  }, [timeOfDay, timeMode]);
   const intensity = useMemo(() => {
-    if (timeOfDay < 0.2 || timeOfDay > 0.8) return 0.2; // Night
-    if (timeOfDay < 0.3 || timeOfDay > 0.7) return 0.6; // Dawn/dusk
-    return 1.2; // Day
-  }, [timeOfDay]);
-
+    if (timeMode === 'night') return 0.3;
+    if (timeMode === 'day') return 1.8;
+    const cycle = timeOfDay;
+    if (cycle < 0.1) return 0.3;
+    if (cycle < 0.2) {
+      return 0.3 + smoothStep(0.1, 0.2, cycle) * 0.4;
+    }
+    if (cycle < 0.3) {
+      return 0.7 + smoothStep(0.2, 0.3, cycle) * 0.6;
+    }
+    if (cycle < 0.4) {
+      return 1.3 + smoothStep(0.3, 0.4, cycle) * 0.5;
+    }
+    if (cycle < 0.6) {
+      return 1.8;
+    }
+    if (cycle < 0.7) {
+      return 1.8 - smoothStep(0.6, 0.7, cycle) * 0.5;
+    }
+    if (cycle < 0.8) {
+      return 1.3 - smoothStep(0.7, 0.8, cycle) * 0.6;
+    }
+    if (cycle < 0.9) {
+      return 0.7 - smoothStep(0.8, 0.9, cycle) * 0.4;
+    }
+    return 0.3;
+  }, [timeOfDay, timeMode]);
+  const ambientIntensity = useMemo(() => {
+    if (timeMode === 'night') return 0.2;
+    if (timeMode === 'day') return 0.6;
+    const cycle = timeOfDay;
+    if (cycle < 0.1) return 0.2;
+    if (cycle < 0.2) return 0.2 + smoothStep(0.1, 0.2, cycle) * 0.15;
+    if (cycle < 0.3) return 0.35 + smoothStep(0.2, 0.3, cycle) * 0.15;
+    if (cycle < 0.4) return 0.5 + smoothStep(0.3, 0.4, cycle) * 0.1;
+    if (cycle < 0.6) return 0.6;
+    if (cycle < 0.7) return 0.6 - smoothStep(0.6, 0.7, cycle) * 0.1;
+    if (cycle < 0.8) return 0.5 - smoothStep(0.7, 0.8, cycle) * 0.15;
+    if (cycle < 0.9) return 0.35 - smoothStep(0.8, 0.9, cycle) * 0.15;
+    return 0.2;
+  }, [timeOfDay, timeMode]);
   return (
     <>
-      <ambientLight intensity={0.2 + timeOfDay * 0.3} color={sunColor} />
+      <ambientLight intensity={ambientIntensity} color={sunColor} />
       <directionalLight
         position={sunPosition}
         intensity={intensity}
@@ -216,34 +488,84 @@ function EnhancedEnvironment({ timeOfDay, weather }) {
         shadow-camera-top={20}
         shadow-camera-bottom={-20}
       />
-      
-      <Sky
-        distance={450000}
-        sunPosition={sunPosition}
-        inclination={0.6}
-        azimuth={0.25}
-        turbidity={weather === 'misty' ? 8 : 1}
-        rayleigh={weather === 'cloudy' ? 2 : 6}
-        mieCoefficient={weather === 'misty' ? 0.1 : 0.001}
-        mieDirectionalG={0.7}
-      />
-
-      {timeOfDay < 0.3 || timeOfDay > 0.7 ? (
-        <Stars radius={300} depth={60} count={1000} factor={6} saturation={0} fade />
-      ) : null}
-      
-      {weather === 'cloudy' && (
-        <>
-          <Cloud position={[10, 8, -10]} speed={0.1} opacity={0.4} />
-          <Cloud position={[-15, 10, 5]} speed={0.08} opacity={0.3} />
-          <Cloud position={[20, 12, 20]} speed={0.12} opacity={0.5} />
-        </>
+      <CustomSky timeOfDay={timeOfDay} timeMode={timeMode} />
+      {(timeMode === 'night' || (timeMode === 'cycle' && (timeOfDay < 0.2 || timeOfDay > 0.8))) && (
+        <Stars radius={300} depth={60} count={2000} factor={8} saturation={0} fade />
       )}
     </>
   );
 }
 
-// Collision detection system (unchanged)
+// Ground with excellent night visibility - warm sandy color
+function Ground({ collisionDetector, timeOfDay, timeMode }) {
+  const groundRef = useRef();
+  const smoothStep = (edge0, edge1, x) => {
+    const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0)));
+    return t * t * (3 - 2 * t);
+  };
+  const groundColor = useMemo(() => {
+    const color = new Color();
+    if (timeMode === 'night') {
+      return color.setHSL(0.08, 0.4, 0.35); // Warm sandy beige - perfectly visible at night
+    } else if (timeMode === 'day') {
+      return color.setHSL(0.25, 0.6, 0.25); // Vibrant green during day
+    }
+    const cycle = timeOfDay;
+    if (cycle < 0.1) {
+      return color.setHSL(0.08, 0.4, 0.35);
+    } else if (cycle < 0.2) {
+      const factor = smoothStep(0.1, 0.2, cycle);
+      return color.setHSL(0.08 + factor * 0.17, 0.4 + factor * 0.1, 0.35 - factor * 0.1);
+    } else if (cycle < 0.3) {
+      const factor = smoothStep(0.2, 0.3, cycle);
+      return color.setHSL(0.25, 0.5 + factor * 0.1, 0.25 + factor * 0.05);
+    } else if (cycle < 0.4) {
+      const factor = smoothStep(0.3, 0.4, cycle);
+      return color.setHSL(0.25, 0.6, 0.25);
+    } else if (cycle < 0.6) {
+      return color.setHSL(0.25, 0.6, 0.25);
+    } else if (cycle < 0.7) {
+      const factor = smoothStep(0.6, 0.7, cycle);
+      return color.setHSL(0.25, 0.6 - factor * 0.1, 0.25 + factor * 0.05);
+    } else if (cycle < 0.8) {
+      const factor = smoothStep(0.7, 0.8, cycle);
+      return color.setHSL(0.25 - factor * 0.1, 0.5, 0.3 + factor * 0.05);
+    } else if (cycle < 0.9) {
+      const factor = smoothStep(0.8, 0.9, cycle);
+      return color.setHSL(0.15 - factor * 0.07, 0.4, 0.35);
+    } else {
+      return color.setHSL(0.08, 0.4, 0.35);
+    }
+  }, [timeOfDay, timeMode]);
+  useEffect(() => {
+    if (collisionDetector && groundRef.current) {
+      collisionDetector.addCollisionObject(groundRef.current);
+    }
+  }, [collisionDetector]);
+  return (
+    <group>
+      <mesh 
+        ref={groundRef}
+        rotation={[-Math.PI / 2, 0, 0]} 
+        position={[0, -0.1, 0]} 
+        receiveShadow
+      >
+        <planeGeometry args={[100, 100, 20, 20]} />
+        <meshStandardMaterial 
+          color={groundColor}
+          roughness={0.8}
+          metalness={0.0}
+        />
+      </mesh>
+      <mesh position={[8, 0.5, 8]} castShadow receiveShadow>
+        <boxGeometry args={[1, 1, 1]} />
+        <meshStandardMaterial color="#8B4513" roughness={0.9} />
+      </mesh>
+    </group>
+  );
+}
+
+// Collision detection system
 class CollisionDetector {
   constructor() {
     this.raycaster = new Raycaster();
@@ -251,7 +573,6 @@ class CollisionDetector {
     this.playerRadius = 0.3;
     this.stepHeight = 0.2;
   }
-
   addCollisionObject(object) {
     object.traverse((child) => {
       if (child instanceof Mesh) {
@@ -259,11 +580,9 @@ class CollisionDetector {
       }
     });
   }
-
   checkCollision(position, direction, distance = 0.5) {
     this.raycaster.set(position, direction.normalize());
     const intersects = this.raycaster.intersectObjects(this.collisionObjects, true);
-    
     if (intersects.length > 0) {
       const closestIntersection = intersects[0];
       return {
@@ -273,23 +592,17 @@ class CollisionDetector {
         normal: closestIntersection.face.normal.clone()
       };
     }
-    
     return { hit: false };
   }
-
   checkPlayerCollision(currentPos, newPos) {
     const movement = newPos.clone().sub(currentPos);
     const movementDistance = movement.length();
-    
     if (movementDistance < 0.001) return { canMove: true, adjustedPosition: newPos };
-
     const playerPos = currentPos.clone();
     playerPos.y += 0.5;
-
     let canMoveX = true;
     let canMoveZ = true;
     let adjustedPosition = newPos.clone();
-
     const xMovement = new Vector3(newPos.x - currentPos.x, 0, 0);
     if (xMovement.length() > 0) {
       const collision = this.checkCollision(playerPos, xMovement.normalize(), this.playerRadius + Math.abs(xMovement.x));
@@ -298,7 +611,6 @@ class CollisionDetector {
         adjustedPosition.x = currentPos.x;
       }
     }
-
     const zMovement = new Vector3(0, 0, newPos.z - currentPos.z);
     if (zMovement.length() > 0) {
       const collision = this.checkCollision(playerPos, zMovement.normalize(), this.playerRadius + Math.abs(zMovement.z));
@@ -307,24 +619,19 @@ class CollisionDetector {
         adjustedPosition.z = currentPos.z;
       }
     }
-
     const groundCheck = this.checkCollision(
       new Vector3(adjustedPosition.x, adjustedPosition.y + 1, adjustedPosition.z),
       new Vector3(0, -1, 0),
       2
     );
-
     if (groundCheck.hit) {
       const groundHeight = groundCheck.point.y;
       const heightDifference = groundHeight - currentPos.y;
-      
       if (heightDifference > this.stepHeight) {
         return { canMove: false, adjustedPosition: currentPos };
       }
-      
       adjustedPosition.y = groundHeight + 0.1;
     }
-
     return { 
       canMove: canMoveX || canMoveZ, 
       adjustedPosition,
@@ -334,70 +641,107 @@ class CollisionDetector {
   }
 }
 
-// Enhanced First-person controls with footstep audio
-function FirstPersonControls({ speed = 5, collisionDetector, audioManager, onMove }) {
+// Fixed First Person Controls with proper mouse movement and vertical controls
+function FirstPersonControls({ speed = 6, collisionDetector, audioManager, onMove }) {
   const { camera, gl } = useThree();
+  // Movement states
   const moveForward = useRef(false);
   const moveBackward = useRef(false);
   const moveLeft = useRef(false);
   const moveRight = useRef(false);
-  const prevTime = useRef(performance.now());
-  const lastFootstep = useRef(0);
-  
-  const mouseSensitivity = useRef(0.0008);
-  const mouseVelocity = useRef({ x: 0, y: 0 });
-  const smoothing = useRef(0.85);
+  // Vertical movement states
+  const isJumping = useRef(false);
+  const isCrouching = useRef(false);
+  // Realistic human height (approximately 1.55m - even more natural)
+  const baseHeight = useRef(1.55);
+  const currentHeight = useRef(baseHeight.current);
+  // Movement system
+  const velocity = useRef(new Vector3());
+  const direction = useRef(new Vector3());
+  // Fixed mouse controls - separate horizontal and vertical movement properly
+  const mouseSensitivity = useRef(0.002);
   const isPointerLocked = useRef(false);
-
+  // Jump physics
+  const jumpVelocity = useRef(0);
+  const gravity = useRef(-0.02);
+  const isGrounded = useRef(true);
   const outerBoundary = useMemo(() => new Box3(
-    new Vector3(-25, -1, -25),
-    new Vector3(25, 8, 25)
+    new Vector3(-35, 0.3, -35), // Lower minimum height
+    new Vector3(35, 3, 35)      // Higher maximum
   ), []);
-
   useEffect(() => {
     const handleKeyDown = (event) => {
       switch (event.code) {
+        // WASD controls
         case 'KeyW': moveForward.current = true; break;
         case 'KeyS': moveBackward.current = true; break;
         case 'KeyA': moveLeft.current = true; break;
         case 'KeyD': moveRight.current = true; break;
+        // Space for jump
+        case 'Space':
+          if (isGrounded.current && !isJumping.current) {
+            isJumping.current = true;
+            isGrounded.current = false;
+            jumpVelocity.current = 0.15; // Jump strength
+          }
+          event.preventDefault();
+          break;
+        // Shift for crouch
+        case 'ShiftLeft':
+        case 'ShiftRight':
+          isCrouching.current = true;
+          currentHeight.current = baseHeight.current - 0.4; // Crouch height
+          break;
       }
     };
-
     const handleKeyUp = (event) => {
       switch (event.code) {
         case 'KeyW': moveForward.current = false; break;
         case 'KeyS': moveBackward.current = false; break;
         case 'KeyA': moveLeft.current = false; break;
         case 'KeyD': moveRight.current = false; break;
+        case 'ShiftLeft':
+        case 'ShiftRight':
+          isCrouching.current = false;
+          currentHeight.current = baseHeight.current; // Return to normal height
+          break;
       }
     };
-
     const handleMouseMove = (event) => {
       if (document.pointerLockElement === gl.domElement && isPointerLocked.current) {
-        mouseVelocity.current.x = event.movementX * mouseSensitivity.current;
-        mouseVelocity.current.y = event.movementY * mouseSensitivity.current;
+        // Fixed: Separate horizontal and vertical mouse movement properly
+        const deltaX = event.movementX * mouseSensitivity.current;
+        const deltaY = event.movementY * mouseSensitivity.current;
+        // Horizontal rotation (Y-axis) - left/right
+        camera.rotation.y -= deltaX;
+        // Vertical rotation (X-axis) - up/down with limits
+        const newPitch = camera.rotation.x - deltaY;
+        camera.rotation.x = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, newPitch));
       }
     };
-
-    const handleClick = () => {
-      gl.domElement.requestPointerLock();
+    const handleClick = async () => {
+      try {
+        await gl.domElement.requestPointerLock();
+        isPointerLocked.current = true;
+        if (audioManager) {
+          audioManager.playAmbient();
+        }
+      } catch (error) {
+        console.log('Pointer lock failed:', error);
+      }
     };
-
     const handlePointerLockChange = () => {
       isPointerLocked.current = document.pointerLockElement === gl.domElement;
-      if (!isPointerLocked.current) {
-        mouseVelocity.current.x = 0;
-        mouseVelocity.current.y = 0;
-      }
     };
-
+    // Add event listeners
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('keyup', handleKeyUp);
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('pointerlockchange', handlePointerLockChange);
     gl.domElement.addEventListener('click', handleClick);
-
+    // Set initial camera position
+    camera.position.set(0, currentHeight.current, 8);
+    camera.rotation.set(0, 0, 0);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('keyup', handleKeyUp);
@@ -405,73 +749,76 @@ function FirstPersonControls({ speed = 5, collisionDetector, audioManager, onMov
       document.removeEventListener('pointerlockchange', handlePointerLockChange);
       gl.domElement.removeEventListener('click', handleClick);
     };
-  }, [camera, gl]);
-
+  }, [camera, gl, audioManager, outerBoundary]);
   useFrame((state, delta) => {
-    const time = performance.now();
-    const deltaTime = (time - prevTime.current) / 1000;
-    prevTime.current = time;
-
-    if (isPointerLocked.current) {
-      camera.rotation.y -= mouseVelocity.current.x;
-      camera.rotation.x -= mouseVelocity.current.y;
-      
-      camera.rotation.x = Math.max(-Math.PI * 0.45, Math.min(Math.PI * 0.45, camera.rotation.x));
-      
-      mouseVelocity.current.x *= smoothing.current;
-      mouseVelocity.current.y *= smoothing.current;
-      
-      if (Math.abs(mouseVelocity.current.x) < 0.0001) mouseVelocity.current.x = 0;
-      if (Math.abs(mouseVelocity.current.y) < 0.0001) mouseVelocity.current.y = 0;
+    const deltaTime = Math.min(delta, 0.016);
+    // Handle jumping physics
+    if (isJumping.current) {
+      jumpVelocity.current += gravity.current;
+      camera.position.y += jumpVelocity.current;
+      // Check if landed
+      if (camera.position.y <= currentHeight.current) {
+        camera.position.y = currentHeight.current;
+        isJumping.current = false;
+        isGrounded.current = true;
+        jumpVelocity.current = 0;
+      }
     }
-
+    // Smooth height adjustment for crouching/standing
+    if (!isJumping.current) {
+      const targetHeight = isCrouching.current ? (baseHeight.current - 0.4) : baseHeight.current;
+      camera.position.y += (targetHeight - camera.position.y) * 0.2;
+      currentHeight.current = targetHeight;
+    }
     const isMoving = moveForward.current || moveBackward.current || moveLeft.current || moveRight.current;
-
     if (isMoving) {
       const currentPosition = camera.position.clone();
-      
+      // Get camera directions - FIXED: Use only horizontal rotation for movement
       const forward = new Vector3();
       camera.getWorldDirection(forward);
+      forward.y = 0; // Keep movement horizontal only
+      forward.normalize();
       const right = new Vector3();
       right.crossVectors(forward, new Vector3(0, 1, 0)).normalize();
-      
-      const movement = new Vector3();
-      
-      if (moveForward.current) {
-        movement.add(forward.multiplyScalar(speed * deltaTime));
+      // Calculate movement direction
+      direction.current.set(0, 0, 0);
+      if (moveForward.current) direction.current.add(forward);
+      if (moveBackward.current) direction.current.add(forward.clone().negate());
+      if (moveRight.current) direction.current.add(right);
+      if (moveLeft.current) direction.current.add(right.clone().negate());
+      // Smooth acceleration
+      if (direction.current.length() > 0) {
+        direction.current.normalize();
+        const acceleration = 30;
+        const targetVelocity = direction.current.clone().multiplyScalar(speed);
+        velocity.current.lerp(targetVelocity, acceleration * deltaTime);
       }
-      if (moveBackward.current) {
-        movement.add(forward.multiplyScalar(-speed * deltaTime));
-      }
-      if (moveRight.current) {
-        movement.add(right.multiplyScalar(speed * deltaTime));
-      }
-      if (moveLeft.current) {
-        movement.add(right.multiplyScalar(-speed * deltaTime));
-      }
-      
+    } else {
+      // Smooth deceleration
+      velocity.current.multiplyScalar(0.8);
+    }
+    // Apply movement with collision detection
+    if (velocity.current.length() > 0.001) {
+      const currentPosition = camera.position.clone();
+      const movement = velocity.current.clone().multiplyScalar(deltaTime);
+      // Only apply horizontal movement, keep vertical position separate
       movement.y = 0;
       const newPosition = currentPosition.clone().add(movement);
-      
       if (collisionDetector && collisionDetector.collisionObjects.length > 0) {
         const collisionResult = collisionDetector.checkPlayerCollision(currentPosition, newPosition);
-        
         if (collisionResult.canMove) {
+          // Maintain current vertical position
+          collisionResult.adjustedPosition.y = camera.position.y;
           camera.position.copy(collisionResult.adjustedPosition);
           onMove && onMove(camera.position);
-          
-          // Play footstep sounds
-          if (time - lastFootstep.current > 500) { // Every 500ms
-            audioManager.playEffect('footstep', camera.position);
-            lastFootstep.current = time;
-          }
         }
       } else {
+        newPosition.y = camera.position.y; // Maintain height
         camera.position.copy(newPosition);
         onMove && onMove(camera.position);
       }
     }
-
+    // Boundary check
     if (!outerBoundary.containsPoint(camera.position)) {
       const clampedPos = camera.position.clone();
       clampedPos.x = Math.max(outerBoundary.min.x, Math.min(outerBoundary.max.x, camera.position.x));
@@ -480,26 +827,20 @@ function FirstPersonControls({ speed = 5, collisionDetector, audioManager, onMov
       camera.position.copy(clampedPos);
     }
   });
-
   return null;
 }
 
-// Temple model with enhanced materials
+// Temple positioned for optimal experience
 function TempleModel({ collisionDetector }) {
-  const { scene } = useGLTF('/models/suntemple_base_basic_shaded.glb');
-  
+  const { scene } = useGLTF('/models/suntemple_compressed.glb');
   useEffect(() => {
     if (collisionDetector && scene) {
       collisionDetector.addCollisionObject(scene);
-      
-      // Enhanced materials
       scene.traverse((child) => {
         if (child instanceof Mesh) {
           child.castShadow = true;
           child.receiveShadow = true;
-          
           if (child.material) {
-            // Enhance existing materials
             child.material.metalness = 0.1;
             child.material.roughness = 0.8;
           }
@@ -507,437 +848,360 @@ function TempleModel({ collisionDetector }) {
       });
     }
   }, [scene, collisionDetector]);
-
-  return <primitive object={scene} scale={0.8} />;
+  return <primitive object={scene} scale={1.4} position={[0, 0, 2]} />;
 }
 
-// Enhanced ground with better textures
-function Ground({ collisionDetector }) {
-  const groundRef = useRef();
-  const grassTexture = useTexture('/textures/green3.jpg');
-  grassTexture.wrapS = grassTexture.wrapT = 1000;
-  grassTexture.repeat.set(20, 20);
-
-  useEffect(() => {
-    if (collisionDetector && groundRef.current) {
-      collisionDetector.addCollisionObject(groundRef.current);
-    }
-  }, [collisionDetector]);
-
-  return (
-    <group>
-      <mesh 
-        ref={groundRef}
-        rotation={[-Math.PI / 2, 0, 0]} 
-        position={[0, -0.1, 0]} 
-        receiveShadow
-      >
-        <planeGeometry args={[100, 100]} />
-        <meshStandardMaterial 
-          map={grassTexture} 
-          roughness={0.8}
-          metalness={0.0}
-        />
-      </mesh>
-      
-      {/* Add some simple geometry for visual interest */}
-      <mesh position={[8, 0.5, 8]} castShadow receiveShadow>
-        <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial color="#8B4513" roughness={0.9} />
-      </mesh>
-      
-      <mesh position={[-6, 0.3, -4]} castShadow receiveShadow>
-        <sphereGeometry args={[0.6, 12, 12]} />
-        <meshStandardMaterial color="#654321" roughness={0.8} />
-      </mesh>
-    </group>
-  );
-}
-
-// Settings Panel
+// Enhanced Settings Panel
 function SettingsPanel({ 
   audioManager, 
   timeOfDay, 
-  weather, 
-  setWeather, 
+  timeMode,
+  setDayTime,
+  setNightTime,
+  setCycleMode,
   cycleTime, 
   isPlaying,
-  onPhotoMode,
   showParticles,
   setShowParticles 
 }) {
   const [showSettings, setShowSettings] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(audioManager.enabled);
-
-  const toggleAudio = () => {
+  const [ambientVolume, setAmbientVolume] = useState(0.4);
+  const [isHovered, setIsHovered] = useState(false);
+  useEffect(() => {
+    setAmbientVolume(audioManager.ambientVolume);
+  }, [audioManager]);
+  const handleVolumeChange = (e) => {
+    const volume = parseFloat(e.target.value);
+    setAmbientVolume(volume);
+    audioManager.setVolume('ambient', volume);
+  };
+  const toggleAudio = async () => {
     const enabled = audioManager.toggle();
     setAudioEnabled(enabled);
+    if (enabled) {
+      await audioManager.playAmbient();
+    }
   };
-
+  const getTimeOfDayLabel = () => {
+    if (timeMode === 'night') return 'Night';
+    if (timeMode === 'day') return 'Day';
+    const cycle = timeOfDay;
+    if (cycle < 0.1) return 'Deep Night';
+    if (cycle < 0.2) return 'Pre-Dawn';
+    if (cycle < 0.3) return 'Sunrise';
+    if (cycle < 0.4) return 'Morning';
+    if (cycle < 0.6) return 'Day';
+    if (cycle < 0.7) return 'Evening';
+    if (cycle < 0.8) return 'Sunset';
+    if (cycle < 0.9) return 'Dusk';
+    return 'Night';
+  };
+  const timeOptions = [
+    { value: 'day', label: 'Day Time', icon: <Sun size={16} />, description: 'Fixed bright daylight' },
+    { value: 'night', label: 'Night Time', icon: <Moon size={16} />, description: 'Fixed stars with perfect ground visibility' },
+    { value: 'cycle', label: 'Day/Night Cycle', icon: <Settings size={16} />, description: 'Smooth 20-second progression' }
+  ];
   return (
     <>
       <button
-        className="fixed top-4 right-4 p-2 bg-black bg-opacity-50 text-white rounded hover:bg-opacity-70 transition-all"
+        className={`fixed left-4 top-1/2 transform -translate-y-1/2 z-50 p-3 bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-r-xl shadow-lg hover:from-slate-700 hover:to-slate-800 transition-all duration-300 ${
+          showSettings ? 'translate-x-80' : 'translate-x-0'
+        } ${isHovered ? 'scale-110 shadow-xl' : ''}`}
         onClick={() => setShowSettings(!showSettings)}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        <Settings size={20} />
+        <Settings
+          size={24}
+          className={`transition-transform duration-300 ${showSettings ? 'rotate-90' : ''} ${isHovered ? 'scale-110' : ''}`}
+        />
       </button>
-
-      {showSettings && (
-        <div className="fixed top-16 right-4 p-4 bg-black bg-opacity-80 text-white rounded-lg min-w-64">
-          <h3 className="text-lg font-bold mb-3">Settings</h3>
-          
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span>Audio</span>
-              <button onClick={toggleAudio} className="p-1">
-                {audioEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
-              </button>
+      <div className={`fixed left-0 top-0 h-full w-80 bg-gradient-to-b from-slate-900/95 via-slate-800/95 to-slate-900/95 text-white shadow-2xl transform transition-all duration-300 ease-in-out z-40 backdrop-blur-sm ${
+        showSettings ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        <div className="p-6 h-full overflow-y-auto">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-bold text-yellow-400 drop-shadow-lg">Temple Settings</h2>
+            <div className="text-sm text-gray-300 text-right">
+              <div>Sun Temple Explorer</div>
+              <div className="text-xs text-yellow-400">Fixed Controls v1.2</div>
             </div>
-            
-            <div className="flex items-center justify-between">
-              <span>Time Cycle</span>
-              <button 
-                onClick={cycleTime}
-                className={`p-1 ${isPlaying ? 'text-yellow-400' : ''}`}
-              >
-                <Sun size={20} />
-              </button>
+          </div>
+          {/* Time Control Section */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold mb-4 text-blue-300 border-b border-blue-300/30 pb-2">
+              Time Control
+            </h3>
+            <div className="space-y-3 mb-4">
+              {timeOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => {
+                    if (option.value === 'day') setDayTime();
+                    if (option.value === 'night') setNightTime();
+                    if (option.value === 'cycle') setCycleMode();
+                  }}
+                  className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-200 w-full text-left hover:scale-105 ${
+                    timeMode === option.value
+                      ? 'bg-blue-500/30 border-2 border-blue-400 text-blue-300 shadow-lg'
+                      : 'bg-slate-700/50 border border-slate-600 hover:bg-slate-700 hover:border-slate-500'
+                  }`}
+                >
+                  <span className="flex-shrink-0">{option.icon}</span>
+                  <div className="flex-1">
+                    <div className="font-medium">{option.label}</div>
+                    <div className="text-xs text-gray-400">{option.description}</div>
+                  </div>
+                  {timeMode === option.value && (
+                    <div className="w-3 h-3 bg-blue-400 rounded-full flex-shrink-0 animate-pulse"></div>
+                  )}
+                </button>
+              ))}
             </div>
-            
-            <div>
-              <label className="block mb-1">Weather</label>
-              <select 
-                value={weather} 
-                onChange={(e) => setWeather(e.target.value)}
-                className="bg-gray-700 text-white p-1 rounded w-full"
-              >
-                <option value="clear">Clear</option>
-                <option value="cloudy">Cloudy</option>
-                <option value="misty">Misty</option>
-              </select>
+            {timeMode === 'cycle' && (
+              <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700 hover:border-slate-600 transition-all duration-200">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-medium">Cycle Progress</span>
+                  <button 
+                    onClick={cycleTime}
+                    className={`p-2 rounded-full transition-all duration-200 hover:scale-110 ${
+                      isPlaying 
+                        ? 'bg-yellow-500/30 text-yellow-400 hover:bg-yellow-500/40' 
+                        : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
+                    }`}
+                  >
+                    {isPlaying ? '⏸️' : '▶️'}
+                  </button>
+                </div>
+                <div className="w-full bg-slate-700 rounded-full h-3 mb-2">
+                  <div
+                    className="bg-gradient-to-r from-purple-500 via-blue-400 via-yellow-400 via-orange-400 to-purple-500 h-3 rounded-full transition-all duration-1000 shadow-lg"
+                    style={{ width: `${timeOfDay * 100}%` }}
+                  />
+                </div>
+                <div className="text-xs text-gray-300 mt-2 text-center font-medium bg-slate-700/50 py-1 rounded">
+                  Current: {getTimeOfDayLabel()}
+                </div>
+              </div>
+            )}
+          </div>
+          {/* Visual Effects Section */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold mb-4 text-purple-300 border-b border-purple-300/30 pb-2">
+              Visual Effects
+            </h3>
+            <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700 hover:border-slate-600 transition-all duration-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-medium">Particles & Effects</div>
+                  <div className="text-sm text-gray-400">Dust, fireflies, and atmospheric effects</div>
+                </div>
+                <button 
+                  onClick={() => setShowParticles(!showParticles)}
+                  className={`p-3 rounded-full transition-all duration-200 hover:scale-110 ${
+                    showParticles
+                      ? 'bg-purple-500/30 text-purple-400 hover:bg-purple-500/40 shadow-lg'
+                      : 'bg-slate-700 text-gray-400 hover:bg-slate-600'
+                  }`}
+                >
+                  {showParticles ? <Eye size={20} /> : <EyeOff size={20} />}
+                </button>
+              </div>
             </div>
-            
-            <div className="flex items-center justify-between">
-              <span>Particles</span>
-              <button 
-                onClick={() => setShowParticles(!showParticles)}
-                className="p-1"
-              >
-                {showParticles ? <Eye size={20} /> : <EyeOff size={20} />}
-              </button>
+          </div>
+          {/* Audio Section */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold mb-4 text-orange-300 border-b border-orange-300/30 pb-2">
+              Audio Settings
+            </h3>
+            <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700 hover:border-slate-600 transition-all duration-200">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <div className="font-medium">Mystical Temple Music</div>
+                  <div className="text-sm text-gray-400">Ethereal temple ambience soundtrack</div>
+                </div>
+                <button 
+                  onClick={toggleAudio}
+                  className={`p-3 rounded-full transition-all duration-200 hover:scale-110 ${
+                    audioEnabled
+                      ? 'bg-orange-500/30 text-orange-400 hover:bg-orange-500/40 shadow-lg'
+                      : 'bg-slate-700 text-gray-400 hover:bg-slate-600'
+                  }`}
+                >
+                  {audioEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
+                </button>
+              </div>
+              <div className="space-y-3">
+                <label className="text-sm text-gray-300 flex items-center justify-between">
+                  <span>Volume</span>
+                  <span className="text-orange-400 font-mono">{Math.round(ambientVolume * 100)}%</span>
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={ambientVolume}
+                  onChange={handleVolumeChange}
+                  className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer slider-thumb"
+                />
+              </div>
             </div>
-            
-            <button
-              onClick={onPhotoMode}
-              className="flex items-center gap-2 p-2 bg-blue-600 rounded hover:bg-blue-700 w-full justify-center"
-            >
-              <Camera size={16} />
-              Photo Mode
-            </button>
+          </div>
+          {/* Controls Help */}
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold mb-4 text-green-300 border-b border-green-300/30 pb-2">
+              Fixed Controls
+            </h3>
+            <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700 hover:border-slate-600 transition-all duration-200 text-sm">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2"><div className="w-2 h-2 bg-green-400 rounded-full"></div><strong>Move:</strong> WASD (forward/back/left/right)</div>
+                <div className="flex items-center gap-2"><div className="w-2 h-2 bg-green-400 rounded-full"></div><strong>Look:</strong> Mouse (fixed horizontal/vertical)</div>
+                <div className="flex items-center gap-2"><div className="w-2 h-2 bg-green-400 rounded-full"></div><strong>Jump:</strong> Spacebar (working now!)</div>
+                <div className="flex items-center gap-2"><div className="w-2 h-2 bg-green-400 rounded-full"></div><strong>Crouch:</strong> Shift key (working now!)</div>
+                <div className="flex items-center gap-2"><div className="w-2 h-2 bg-green-400 rounded-full"></div><strong>Height:</strong> Realistic 1.55m perspective</div>
+                <div className="text-yellow-300 text-xs mt-3 p-2 bg-yellow-500/10 rounded border border-yellow-500/20">
+                  ✅ Fixed: Mouse movement now works correctly<br/>
+                  ✅ Fixed: Spacebar jump now functional<br/>
+                  ✅ Fixed: Shift crouch now working properly<br/>
+                  ✅ Improved: Lowered eye level to 1.55m<br/>
+                  ✅ Enhanced: Proper horizontal movement only
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      )}
+      </div>
+      <style jsx>{`
+        .slider-thumb::-webkit-slider-thumb {
+          appearance: none;
+          height: 20px;
+          width: 20px;
+          border-radius: 50%;
+          background: linear-gradient(45deg, #f59e0b, #ec4899);
+          cursor: pointer;
+          border: 2px solid #ffffff;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          transition: all 0.2s ease;
+        }
+        .slider-thumb::-webkit-slider-thumb:hover {
+          transform: scale(1.2);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+      `}</style>
     </>
   );
 }
 
-// Konark Sun Temple narration script
-const SUN_TEMPLE_SCRIPT = `The Konark Sun Temple\n\nImagine a temple so grand it was designed as a colossal celestial chariot for the Sun God himself, carved from stone and steeped in legend. Welcome to the Konark Sun Temple, a 13th-century marvel on the coast of Odisha, India, that is as mysterious as it is magnificent.\n\nA Chariot Forged in Stone\n\nBuilt around 1250 CE by King Narasimhadeva I of the Eastern Ganga Dynasty, the temple is an architectural ode to Surya, the Sun God. The entire structure is conceived as his gigantic chariot, carefully oriented towards the east so that the first rays of sunrise strike the principal entrance.\n\n24 Exquisite Wheels: Each wheel is not just a masterpiece of carving but a symbol of time itself, representing the 24 fortnights of the Hindu year. Each is intricately detailed with carvings and can even be used as a sundial to tell the time.\n\nSeven Mighty Horses: The chariot is drawn by seven powerful stone horses, symbolising the seven days of the week.\n\nLegends That Defy Gravity\n\nThe temple’s wonders extend beyond its visible form into the realm of captivating legend.\n\nThe Floating Idol: Folklore whispers that the main shrine once housed a massive idol of Lord Surya, mysteriously suspended in mid-air. How was this possible?\n\nThe Power of the Lodestone: The secret was said to be a gigantic 52-ton lodestone (a natural magnet) installed in the temple's apex. Its magnetic force was so perfectly calibrated that it held the iron-rich idol aloft, creating a breathtaking spectacle of divine levitation.\n\nThe "Black Pagoda" and the Sailors' Curse\n\nLocated just 2 km from the sea, the temple played a crucial role in maritime history.\n\nEuropean sailors navigating the Bay of Bengal used its towering presence as a landmark. They nicknamed it the "Black Pagoda" due to its dark, weathered appearance.\n\nThe legend grows darker. They believed the temple's legendary lodestone had such powerful magnetic properties that it could draw ships off course, causing them to wreck on the treacherous shores. To save their vessels, tales suggest that Portuguese sailors eventually removed the great magnet and the idol, stealing away the temple's miraculous heart and leaving the structure incomplete.\n\nA Legacy Shrouded in Mystery\n\nWhile the truth of the magnetic idol is debated by historians, the facts are just as compelling. The construction was indeed halted abruptly, likely due to the king's death, leaving the main sanctum unfinished. This air of mystery, combined with its staggering architectural genius, has earned Konark a place as a UNESCO World Heritage Site.\n\nIt remains a place where myth and history collide—a stone poem dedicated to the sun, whose secrets continue to captivate the world.`;
-
-function splitScriptToSentences(script) {
-  return script.split(/(?<=[.!?])\s+/g);
-}
-
-function useSunTempleSpeechWithCaptions() {
-  const synthRef = useRef(window.speechSynthesis);
-  const utteranceRef = useRef(null);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [currentCaption, setCurrentCaption] = useState("");
-  const [isPaused, setIsPaused] = useState(false);
-  const sentences = useMemo(() => splitScriptToSentences(SUN_TEMPLE_SCRIPT), []);
-  const getVoice = () => {
-    const voices = window.speechSynthesis.getVoices();
-    return voices.find(v => v.lang === 'en-IN' && v.gender === 'female')
-      || voices.find(v => v.lang === 'en-IN' && v.name.toLowerCase().includes('female'))
-      || voices.find(v => v.lang === 'en-IN')
-      || voices.find(v => v.lang.startsWith('en') && v.gender === 'female')
-      || voices.find(v => v.lang.startsWith('en'))
-      || null;
-  };
-  const playSpeech = () => {
-    if (!('speechSynthesis' in window)) return;
-    if (synthRef.current.speaking) synthRef.current.cancel();
-    let idx = 0;
-    const speakNext = () => {
-      if (idx >= sentences.length) {
-        setIsSpeaking(false);
-        setIsPaused(false);
-        setCurrentCaption("");
-        return;
-      }
-      const utter = new window.SpeechSynthesisUtterance(sentences[idx]);
-      const voice = getVoice();
-      if (voice) utter.voice = voice;
-      utter.rate = 0.98;
-      utter.pitch = 1.05;
-      utter.volume = 1;
-      utter.onstart = () => setCurrentCaption(sentences[idx]);
-      utter.onend = () => {
-        idx++;
-        speakNext();
-      };
-      utter.onerror = () => {
-        setIsSpeaking(false);
-        setIsPaused(false);
-        setCurrentCaption("");
-      };
-      utteranceRef.current = utter;
-      synthRef.current.speak(utter);
-      setIsSpeaking(true);
-      setIsPaused(false);
-    };
-    speakNext();
-  };
-  const stopSpeech = () => {
-    if (synthRef.current.speaking) {
-      synthRef.current.cancel();
-      setIsSpeaking(false);
-      setIsPaused(false);
-      setCurrentCaption("");
-    }
-  };
-  const pauseSpeech = () => {
-    if (synthRef.current.speaking && !synthRef.current.paused) {
-      synthRef.current.pause();
-      setIsPaused(true);
-    }
-  };
-  const resumeSpeech = () => {
-    if (synthRef.current.paused) {
-      synthRef.current.resume();
-      setIsPaused(false);
-    }
-  };
-  useEffect(() => () => stopSpeech(), []);
-  return { playSpeech, stopSpeech, pauseSpeech, resumeSpeech, isSpeaking, isPaused, currentCaption };
-}
-
 // Main component
-export default function SunTempleExplorer() {
-  const [infoText, setInfoText] = useState('🏛️ Enhanced Temple Explorer - Click to enter immersive mode');
+export default function TempleExplorer() {
+  const [infoText, setInfoText] = useState('Click to explore the magnificent Sun Temple from a realistic human perspective');
   const [showInstructions, setShowInstructions] = useState(true);
-  const [photoMode, setPhotoMode] = useState(false);
   const [showParticles, setShowParticles] = useState(true);
-  
+  const { timeOfDay, setTimeOfDay, timeMode, setDayTime, setNightTime, setCycleMode, cycleTime, isPlaying } = useTimeOfDay();
+  const audioManager = useMemo(() => new AudioManager(), []);
   const collisionDetector = useMemo(() => new CollisionDetector(), []);
-  const audioManager = useMemo(() => {
-    const manager = new AudioManager();
-    manager.init();
-    return manager;
-  }, []);
-  
-  const { timeOfDay, setTimeOfDay, weather, setWeather, cycleTime, isPlaying } = useTimeOfDay();
-  const { playSpeech, stopSpeech, pauseSpeech, resumeSpeech, isSpeaking, isPaused, currentCaption } = useSunTempleSpeechWithCaptions();
-
+  useEffect(() => {
+    audioManager.init();
+    let hasInteracted = false;
+    const startAudio = async () => {
+      if (!hasInteracted) {
+        hasInteracted = true;
+        await audioManager.playAmbient();
+      }
+    };
+    const events = ['click', 'keydown', 'touchstart'];
+    events.forEach(event => {
+      document.addEventListener(event, startAudio, { once: true });
+    });
+    return () => {
+      events.forEach(event => {
+        document.removeEventListener(event, startAudio);
+      });
+    };
+  }, [audioManager]);
   const handlePlayerMove = (position) => {
-    // Play ambient sounds based on location
-    const distanceFromTemple = position.distanceTo(new Vector3(0, 0, 0));
-    if (distanceFromTemple < 5) {
-      audioManager.playAmbient('temple_interior');
+    if (position.z < 4 && position.z > -2) {
+      setInfoText('You are standing before the magnificent temple entrance at natural human height');
+    } else if (position.x > 20) {
+      setInfoText('Walking through the eastern gardens - experience the temple from a realistic perspective');
+    } else if (position.z > 8) {
+      setInfoText('Exploring the forest path with a ground-level view of the ancient temple');
+    } else if (position.z < -5) {
+      setInfoText('You are walking behind the ancient temple among the towering trees');
     } else {
-      audioManager.playAmbient('outdoor');
+      setInfoText('Wandering the sacred temple grounds from a natural human perspective');
     }
   };
-
-  const handlePhotoMode = () => {
-    setPhotoMode(true);
-    setTimeout(() => {
-      // Simulate photo capture
-      setInfoText('📸 Photo captured! Check your downloads folder');
-      setTimeout(() => {
-        setInfoText('🏛️ Enhanced Temple Explorer - Explore the ancient temple');
-        setPhotoMode(false);
-      }, 2000);
-    }, 500);
-  };
-
-  useEffect(() => {
-    // Initialize ambient sounds
-    audioManager.playAmbient('outdoor');
-  }, [audioManager]);
-
-  useEffect(() => {
-    if (!showInstructions) playSpeech();
-    else stopSpeech();
-  }, [showInstructions]);
-
   return (
-    <div className="w-full h-screen relative overflow-hidden">
-      <Canvas 
-        shadows 
-        camera={{ position: [0, 1.6, 8], fov: 75 }}
-        gl={{ antialias: true, alpha: true }}
-      >
-        {/* Enhanced Environment */}
-        <EnhancedEnvironment timeOfDay={timeOfDay} weather={weather} />
-        
-        {/* Fog for atmosphere */}
-        <fog attach="fog" args={['#87CEEB', 20, 100]} />
-        
-        {/* Models */}
-        <TempleModel collisionDetector={collisionDetector} />
-        <Ground collisionDetector={collisionDetector} />
-        
-        {/* Particle Effects */}
-        {showParticles && (
-          <>
-            <Particles type="dust" count={50} />
-            {timeOfDay < 0.3 || timeOfDay > 0.7 ? (
-              <Particles type="fireflies" count={20} />
-            ) : null}
-          </>
-        )}
-        
-        {/* Wildlife */}
-        <Birds />
-        
-        {/* Enhanced Controls */}
-        <FirstPersonControls 
-          speed={7} 
-          collisionDetector={collisionDetector}
-          audioManager={audioManager}
-          onMove={handlePlayerMove}
-        />
-
+    <div className="w-full h-screen relative">
+      <Canvas shadows camera={{ position: [0, 1.55, 8], fov: 75 }}>
+        <EnhancedEnvironment timeOfDay={timeOfDay} timeMode={timeMode} />
         <TimeOfDayUpdater 
           timeOfDay={timeOfDay} 
           setTimeOfDay={setTimeOfDay} 
           isPlaying={isPlaying} 
+          timeMode={timeMode}
+        />
+        <TempleModel collisionDetector={collisionDetector} />
+        <Ground collisionDetector={collisionDetector} timeOfDay={timeOfDay} timeMode={timeMode} />
+        <Forest collisionDetector={collisionDetector} />
+        <Birds />
+        {showParticles && (
+          <>
+            <Particles type="dust" count={200} />
+            {(timeMode === 'night' || (timeMode === 'cycle' && (timeOfDay < 0.2 || timeOfDay > 0.8))) && <Particles type="fireflies" count={30} />}
+          </>
+        )}
+        <FirstPersonControls 
+          speed={8} 
+          collisionDetector={collisionDetector}
+          audioManager={audioManager}
+          onMove={handlePlayerMove}
         />
       </Canvas>
-      
-      {/* Settings Panel */}
+      <div className="absolute bottom-4 left-0 right-0 text-center text-white bg-black/70 p-4 rounded-lg mx-4 backdrop-blur-sm border border-white/10 shadow-2xl">
+        <div className="text-lg font-semibold mb-1">{infoText}</div>
+        <div className="text-sm text-gray-300">Mouse: Look Around • WASD: Move • Space: Jump • Shift: Crouch</div>
+      </div>
+      {showInstructions && (
+        <div className="absolute top-4 left-0 right-0 text-center text-white bg-black/90 p-6 max-w-lg mx-auto rounded-lg backdrop-blur-sm border border-yellow-500/30 shadow-2xl">
+          <h3 className="text-2xl font-bold mb-3 text-yellow-300">Temple Explorer - Fixed Controls</h3>
+          <div className="space-y-3 text-left mb-4">
+            <p className="flex items-center gap-2"><span className="text-green-400">✓</span><strong>Movement:</strong> WASD for natural walking</p>
+            <p className="flex items-center gap-2"><span className="text-green-400">✓</span><strong>Look:</strong> Mouse with fixed horizontal/vertical</p>
+            <p className="flex items-center gap-2"><span className="text-green-400">✓</span><strong>Jump:</strong> Spacebar (now working!)</p>
+            <p className="flex items-center gap-2"><span className="text-green-400">✓</span><strong>Crouch:</strong> Shift key (now working!)</p>
+            <p className="flex items-center gap-2"><span className="text-green-400">✓</span><strong>Height:</strong> Realistic 1.55m perspective</p>
+          </div>
+          <p className="text-green-300 mb-4 text-sm bg-green-500/10 p-2 rounded border border-green-500/20">
+            ✅ Fixed: Mouse movement now correct (no diagonal issues)<br/>
+            ✅ Fixed: Spacebar jump functional with physics<br/>
+            ✅ Fixed: Shift crouch working properly<br/>
+            ✅ Improved: Lowered eye level for better monument viewing
+          </p>
+          <button 
+            className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-500 hover:to-purple-500 transition-all duration-300 font-semibold shadow-lg hover:scale-105"
+            onClick={() => setShowInstructions(false)}
+          >
+            Begin Fixed Temple Exploration!
+          </button>
+        </div>
+      )}
       <SettingsPanel
         audioManager={audioManager}
         timeOfDay={timeOfDay}
-        weather={weather}
-        setWeather={setWeather}
+        timeMode={timeMode}
+        setDayTime={setDayTime}
+        setNightTime={setNightTime}
+        setCycleMode={setCycleMode}
         cycleTime={cycleTime}
         isPlaying={isPlaying}
-        onPhotoMode={handlePhotoMode}
         showParticles={showParticles}
         setShowParticles={setShowParticles}
       />
-      
-      {/* Time of day indicator */}
-      <div className="absolute top-4 left-4 text-white bg-black bg-opacity-50 p-2 rounded">
-        <div className="flex items-center gap-2">
-          {timeOfDay < 0.3 || timeOfDay > 0.7 ? <Moon size={16} /> : <Sun size={16} />}
-          <span className="text-sm">
-            {timeOfDay < 0.2 || timeOfDay > 0.8 ? 'Night' : 
-             timeOfDay < 0.3 || timeOfDay > 0.7 ? 'Twilight' : 'Day'}
-          </span>
-        </div>
-      </div>
-      
-      {/* Photo mode overlay */}
-      {photoMode && (
-        <div className="absolute inset-0 bg-white pointer-events-none animate-pulse" 
-             style={{ animationDuration: '0.1s', animationIterationCount: '1' }} />
-      )}
-      
-      {/* UI Overlay */}
-      <div className="absolute bottom-4 left-0 right-0 text-center text-white bg-black bg-opacity-50 p-2">
-        {infoText}
-      </div>
-      
-      {showInstructions && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-80">
-          <div className="text-center text-white bg-black bg-opacity-90 p-8 max-w-lg mx-auto rounded-lg border border-gold">
-            <h2 className="text-2xl font-bold mb-4 text-yellow-400">🏛️ Enhanced Temple Explorer</h2>
-            
-            <div className="grid grid-cols-2 gap-4 mb-6 text-left">
-              <div>
-                <h3 className="font-semibold mb-2 text-blue-300">Movement</h3>
-                <p className="text-sm">W: Forward</p>
-                <p className="text-sm">S: Backward</p>
-                <p className="text-sm">A: Left</p>
-                <p className="text-sm">D: Right</p>
-                <p className="text-sm">Mouse: Look around</p>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2 text-green-300">Features</h3>
-                <p className="text-sm">⚙️ Settings panel</p>
-                <p className="text-sm">📸 Photo mode</p>
-                <p className="text-sm">🌅 Day/night cycle</p>
-                <p className="text-sm">🦋 Particle effects</p>
-                <p className="text-sm">🔊 Spatial audio</p>
-              </div>
-            </div>
-            
-            <div className="mb-6">
-              <h3 className="font-semibold mb-2 text-yellow-300">✨ New Enhancements</h3>
-              <div className="text-sm grid grid-cols-2 gap-2">
-                <p>• Dynamic lighting system</p>
-                <p>• Weather variations</p>
-                <p>• Flying birds animation</p>
-                <p>• Dust particles & fireflies</p>
-                <p>• Enhanced collision detection</p>
-                <p>• Immersive spatial audio</p>
-                <p>• Photo capture mode</p>
-                <p>• Time of day cycling</p>
-              </div>
-            </div>
-            
-            <p className="text-sm text-gray-300 mb-4">
-              Click canvas to lock cursor • ESC to release cursor
-            </p>
-            
-            <button 
-              className="px-6 py-3 bg-gradient-to-r from-yellow-600 to-yellow-800 text-white rounded-lg font-semibold hover:from-yellow-500 hover:to-yellow-700 transition-all transform hover:scale-105"
-              onClick={() => setShowInstructions(false)}
-            >
-              Enter Temple 🚶‍♂️
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Add TTS controls */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex gap-2">
-        <button
-          className="bg-black bg-opacity-60 text-white px-3 py-1 rounded hover:bg-opacity-80"
-          onClick={playSpeech}
-          disabled={isSpeaking && !isPaused}
-        >
-          ▶️ Play Narration
-        </button>
-        <button
-          className="bg-black bg-opacity-60 text-white px-3 py-1 rounded hover:bg-opacity-80"
-          onClick={pauseSpeech}
-          disabled={!isSpeaking || isPaused}
-        >
-          ⏸️ Pause
-        </button>
-        <button
-          className="bg-black bg-opacity-60 text-white px-3 py-1 rounded hover:bg-opacity-80"
-          onClick={resumeSpeech}
-          disabled={!isSpeaking || !isPaused}
-        >
-          ▶️ Resume
-        </button>
-        <button
-          className="bg-black bg-opacity-60 text-white px-3 py-1 rounded hover:bg-opacity-80"
-          onClick={stopSpeech}
-          disabled={!isSpeaking}
-        >
-          ⏹️ Stop
-        </button>
-      </div>
-      {currentCaption && (
-        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 bg-black bg-opacity-80 text-white text-lg px-6 py-3 rounded shadow-lg max-w-2xl text-center z-50">{currentCaption}</div>
-      )}
     </div>
   );
 }
+
