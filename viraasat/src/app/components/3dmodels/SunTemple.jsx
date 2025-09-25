@@ -143,15 +143,15 @@ function useTimeOfDay() {
     setTimeMode('cycle');
     setIsPlaying(true);
   };
-  return { 
-    timeOfDay, 
-    setTimeOfDay, 
+  return {
+    timeOfDay,
+    setTimeOfDay,
     timeMode,
     setDayTime,
     setNightTime,
     setCycleMode,
-    cycleTime, 
-    isPlaying 
+    cycleTime,
+    isPlaying
   };
 }
 
@@ -219,54 +219,56 @@ function CustomSky({ timeOfDay, timeMode }) {
   );
 }
 
-// Tree Component for realistic environment
 function Tree({ position, size = 1, collisionDetector }) {
   const groupRef = useRef();
+  
+  const { scene } = useGLTF('/models/trees.glb');
+  
+  const treeScene = useMemo(() => scene.clone(), [scene]);
+
   useEffect(() => {
     if (collisionDetector && groupRef.current) {
       collisionDetector.addCollisionObject(groupRef.current);
     }
-  }, [collisionDetector]);
+    
+    // Set up shadows and materials for the 3D model
+    if (treeScene) {
+      treeScene.traverse((child) => {
+        if (child instanceof Mesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          if (child.material) {
+            child.material.metalness = 0.1;
+            child.material.roughness = 0.9;
+            child.material.needsUpdate = true;
+          }
+        }
+      });
+    }
+  }, [collisionDetector, treeScene]);
+
   return (
     <group ref={groupRef} position={position} scale={[size, size, size]}>
-      {/* Trunk */}
-      <mesh position={[0, 1.5, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[0.3, 0.4, 3, 8]} />
-        <meshStandardMaterial color="#8B4513" roughness={0.9} />
-      </mesh>
-      {/* Leaves */}
-      <mesh position={[0, 4, 0]} castShadow receiveShadow>
-        <sphereGeometry args={[1.5, 8, 6]} />
-        <meshStandardMaterial color="#228B22" roughness={0.8} />
-      </mesh>
+      <primitive object={treeScene} />
     </group>
   );
 }
-
-// Forest component with scattered trees
 function Forest({ collisionDetector }) {
   const trees = useMemo(() => {
     return [
-      // Around the temple
-      { position: [12, 0, 5], size: 1.2 },
-      { position: [-10, 0, 8], size: 1.1 },
-      { position: [8, 0, -6], size: 0.9 },
-      { position: [-7, 0, -8], size: 1.3 },
-      // Perimeter trees
-      { position: [25, 0, 15], size: 1.4 },
-      { position: [-20, 0, 18], size: 1.1 },
-      { position: [18, 0, -12], size: 0.8 },
-      { position: [-15, 0, -14], size: 1.2 },
-      { position: [30, 0, -5], size: 1.0 },
-      { position: [-25, 0, 5], size: 1.3 },
+      { position: [26, 0, -5], size: 1.2 },
+    
+      { position: [-40, 0, -15], size: 1.3 },
+   
+      { position: [-20, 0, -20], size: 1.0 },
     ];
   }, []);
   return (
     <group>
       {trees.map((tree, index) => (
-        <Tree 
-          key={index} 
-          position={tree.position} 
+        <Tree
+          key={index}
+          position={tree.position}
           size={tree.size}
           collisionDetector={collisionDetector}
         />
@@ -544,23 +546,20 @@ function Ground({ collisionDetector, timeOfDay, timeMode }) {
   }, [collisionDetector]);
   return (
     <group>
-      <mesh 
+      <mesh
         ref={groundRef}
-        rotation={[-Math.PI / 2, 0, 0]} 
-        position={[0, -0.1, 0]} 
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, -0.1, 0]}
         receiveShadow
       >
         <planeGeometry args={[100, 100, 20, 20]} />
-        <meshStandardMaterial 
+        <meshStandardMaterial
           color={groundColor}
           roughness={0.8}
           metalness={0.0}
         />
       </mesh>
-      <mesh position={[8, 0.5, 8]} castShadow receiveShadow>
-        <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial color="#8B4513" roughness={0.9} />
-      </mesh>
+      
     </group>
   );
 }
@@ -632,8 +631,8 @@ class CollisionDetector {
       }
       adjustedPosition.y = groundHeight + 0.1;
     }
-    return { 
-      canMove: canMoveX || canMoveZ, 
+    return {
+      canMove: canMoveX || canMoveZ,
       adjustedPosition,
       canMoveX,
       canMoveZ
@@ -740,7 +739,7 @@ function FirstPersonControls({ speed = 6, collisionDetector, audioManager, onMov
     document.addEventListener('pointerlockchange', handlePointerLockChange);
     gl.domElement.addEventListener('click', handleClick);
     // Set initial camera position
-    camera.position.set(0, currentHeight.current, 8);
+    camera.position.set(0, currentHeight.current, 28);
     camera.rotation.set(0, 0, 0);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
@@ -848,21 +847,21 @@ function TempleModel({ collisionDetector }) {
       });
     }
   }, [scene, collisionDetector]);
-  return <primitive object={scene} scale={1.4} position={[0, 0, 2]} />;
+  return <primitive object={scene} scale={7.2} position={[0, 0, 2]} />;
 }
 
 // Enhanced Settings Panel
-function SettingsPanel({ 
-  audioManager, 
-  timeOfDay, 
+function SettingsPanel({
+  audioManager,
+  timeOfDay,
   timeMode,
   setDayTime,
   setNightTime,
   setCycleMode,
-  cycleTime, 
+  cycleTime,
   isPlaying,
   showParticles,
-  setShowParticles 
+  setShowParticles
 }) {
   const [showSettings, setShowSettings] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(audioManager.enabled);
@@ -905,9 +904,8 @@ function SettingsPanel({
   return (
     <>
       <button
-        className={`fixed left-4 top-1/2 transform -translate-y-1/2 z-50 p-3 bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-r-xl shadow-lg hover:from-slate-700 hover:to-slate-800 transition-all duration-300 ${
-          showSettings ? 'translate-x-80' : 'translate-x-0'
-        } ${isHovered ? 'scale-110 shadow-xl' : ''}`}
+        className={`fixed left-4 top-1/2 transform -translate-y-1/2 z-50 p-3 bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-r-xl shadow-lg hover:from-slate-700 hover:to-slate-800 transition-all duration-300 ${showSettings ? 'translate-x-80' : 'translate-x-0'
+          } ${isHovered ? 'scale-110 shadow-xl' : ''}`}
         onClick={() => setShowSettings(!showSettings)}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -917,9 +915,8 @@ function SettingsPanel({
           className={`transition-transform duration-300 ${showSettings ? 'rotate-90' : ''} ${isHovered ? 'scale-110' : ''}`}
         />
       </button>
-      <div className={`fixed left-0 top-0 h-full w-80 bg-gradient-to-b from-slate-900/95 via-slate-800/95 to-slate-900/95 text-white shadow-2xl transform transition-all duration-300 ease-in-out z-40 backdrop-blur-sm ${
-        showSettings ? 'translate-x-0' : '-translate-x-full'
-      }`}>
+      <div className={`fixed left-0 top-0 h-full w-80 bg-gradient-to-b from-slate-900/95 via-slate-800/95 to-slate-900/95 text-white shadow-2xl transform transition-all duration-300 ease-in-out z-40 backdrop-blur-sm ${showSettings ? 'translate-x-0' : '-translate-x-full'
+        }`}>
         <div className="p-6 h-full overflow-y-auto">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-yellow-400 drop-shadow-lg">Temple Settings</h2>
@@ -942,11 +939,10 @@ function SettingsPanel({
                     if (option.value === 'night') setNightTime();
                     if (option.value === 'cycle') setCycleMode();
                   }}
-                  className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-200 w-full text-left hover:scale-105 ${
-                    timeMode === option.value
+                  className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-200 w-full text-left hover:scale-105 ${timeMode === option.value
                       ? 'bg-blue-500/30 border-2 border-blue-400 text-blue-300 shadow-lg'
                       : 'bg-slate-700/50 border border-slate-600 hover:bg-slate-700 hover:border-slate-500'
-                  }`}
+                    }`}
                 >
                   <span className="flex-shrink-0">{option.icon}</span>
                   <div className="flex-1">
@@ -963,13 +959,12 @@ function SettingsPanel({
               <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700 hover:border-slate-600 transition-all duration-200">
                 <div className="flex items-center justify-between mb-3">
                   <span className="font-medium">Cycle Progress</span>
-                  <button 
+                  <button
                     onClick={cycleTime}
-                    className={`p-2 rounded-full transition-all duration-200 hover:scale-110 ${
-                      isPlaying 
-                        ? 'bg-yellow-500/30 text-yellow-400 hover:bg-yellow-500/40' 
+                    className={`p-2 rounded-full transition-all duration-200 hover:scale-110 ${isPlaying
+                        ? 'bg-yellow-500/30 text-yellow-400 hover:bg-yellow-500/40'
                         : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
-                    }`}
+                      }`}
                   >
                     {isPlaying ? '⏸️' : '▶️'}
                   </button>
@@ -997,13 +992,12 @@ function SettingsPanel({
                   <div className="font-medium">Particles & Effects</div>
                   <div className="text-sm text-gray-400">Dust, fireflies, and atmospheric effects</div>
                 </div>
-                <button 
+                <button
                   onClick={() => setShowParticles(!showParticles)}
-                  className={`p-3 rounded-full transition-all duration-200 hover:scale-110 ${
-                    showParticles
+                  className={`p-3 rounded-full transition-all duration-200 hover:scale-110 ${showParticles
                       ? 'bg-purple-500/30 text-purple-400 hover:bg-purple-500/40 shadow-lg'
                       : 'bg-slate-700 text-gray-400 hover:bg-slate-600'
-                  }`}
+                    }`}
                 >
                   {showParticles ? <Eye size={20} /> : <EyeOff size={20} />}
                 </button>
@@ -1021,13 +1015,12 @@ function SettingsPanel({
                   <div className="font-medium">Mystical Temple Music</div>
                   <div className="text-sm text-gray-400">Ethereal temple ambience soundtrack</div>
                 </div>
-                <button 
+                <button
                   onClick={toggleAudio}
-                  className={`p-3 rounded-full transition-all duration-200 hover:scale-110 ${
-                    audioEnabled
+                  className={`p-3 rounded-full transition-all duration-200 hover:scale-110 ${audioEnabled
                       ? 'bg-orange-500/30 text-orange-400 hover:bg-orange-500/40 shadow-lg'
                       : 'bg-slate-700 text-gray-400 hover:bg-slate-600'
-                  }`}
+                    }`}
                 >
                   {audioEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
                 </button>
@@ -1062,10 +1055,10 @@ function SettingsPanel({
                 <div className="flex items-center gap-2"><div className="w-2 h-2 bg-green-400 rounded-full"></div><strong>Crouch:</strong> Shift key (working now!)</div>
                 <div className="flex items-center gap-2"><div className="w-2 h-2 bg-green-400 rounded-full"></div><strong>Height:</strong> Realistic 1.55m perspective</div>
                 <div className="text-yellow-300 text-xs mt-3 p-2 bg-yellow-500/10 rounded border border-yellow-500/20">
-                  ✅ Fixed: Mouse movement now works correctly<br/>
-                  ✅ Fixed: Spacebar jump now functional<br/>
-                  ✅ Fixed: Shift crouch now working properly<br/>
-                  ✅ Improved: Lowered eye level to 1.55m<br/>
+                  ✅ Fixed: Mouse movement now works correctly<br />
+                  ✅ Fixed: Spacebar jump now functional<br />
+                  ✅ Fixed: Shift crouch now working properly<br />
+                  ✅ Improved: Lowered eye level to 1.55m<br />
                   ✅ Enhanced: Proper horizontal movement only
                 </div>
               </div>
@@ -1138,10 +1131,10 @@ export default function TempleExplorer() {
     <div className="w-full h-screen relative">
       <Canvas shadows camera={{ position: [0, 1.55, 8], fov: 75 }}>
         <EnhancedEnvironment timeOfDay={timeOfDay} timeMode={timeMode} />
-        <TimeOfDayUpdater 
-          timeOfDay={timeOfDay} 
-          setTimeOfDay={setTimeOfDay} 
-          isPlaying={isPlaying} 
+        <TimeOfDayUpdater
+          timeOfDay={timeOfDay}
+          setTimeOfDay={setTimeOfDay}
+          isPlaying={isPlaying}
           timeMode={timeMode}
         />
         <TempleModel collisionDetector={collisionDetector} />
@@ -1154,8 +1147,8 @@ export default function TempleExplorer() {
             {(timeMode === 'night' || (timeMode === 'cycle' && (timeOfDay < 0.2 || timeOfDay > 0.8))) && <Particles type="fireflies" count={30} />}
           </>
         )}
-        <FirstPersonControls 
-          speed={8} 
+        <FirstPersonControls
+          speed={8}
           collisionDetector={collisionDetector}
           audioManager={audioManager}
           onMove={handlePlayerMove}
@@ -1175,13 +1168,13 @@ export default function TempleExplorer() {
             <p className="flex items-center gap-2"><span className="text-green-400">✓</span><strong>Crouch:</strong> Shift key (now working!)</p>
             <p className="flex items-center gap-2"><span className="text-green-400">✓</span><strong>Height:</strong> Realistic 1.55m perspective</p>
           </div>
-          <p className="text-green-300 mb-4 text-sm bg-green-500/10 p-2 rounded border border-green-500/20">
-            ✅ Fixed: Mouse movement now correct (no diagonal issues)<br/>
-            ✅ Fixed: Spacebar jump functional with physics<br/>
-            ✅ Fixed: Shift crouch working properly<br/>
+          <p className="text-green-300 overflow-hidden md:block mb-4 text-sm bg-green-500/10 p-2 rounded border border-green-500/20">
+            ✅ Fixed: Mouse movement now correct (no diagonal issues)<br />
+            ✅ Fixed: Spacebar jump functional with physics<br />
+            ✅ Fixed: Shift crouch working properly<br />
             ✅ Improved: Lowered eye level for better monument viewing
           </p>
-          <button 
+          <button
             className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-500 hover:to-purple-500 transition-all duration-300 font-semibold shadow-lg hover:scale-105"
             onClick={() => setShowInstructions(false)}
           >
@@ -1204,4 +1197,8 @@ export default function TempleExplorer() {
     </div>
   );
 }
+
+// Preload the models
+useGLTF.preload('/models/suntemple_compressed.glb');
+useGLTF.preload('/models/trees.glb');
 
