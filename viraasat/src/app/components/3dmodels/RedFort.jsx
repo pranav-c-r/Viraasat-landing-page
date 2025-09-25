@@ -221,54 +221,63 @@ function CustomSky({ timeOfDay, timeMode }) {
 
 // Tree Component
 function Tree({ position, size = 1, collisionDetector }) {
-    const groupRef = useRef();
-    useEffect(() => {
-        if (collisionDetector && groupRef.current) {
-            collisionDetector.addCollisionObject(groupRef.current);
+  const groupRef = useRef();
+  
+  const { scene } = useGLTF('/models/trees.glb');
+  
+  const treeScene = useMemo(() => scene.clone(), [scene]);
+
+  useEffect(() => {
+    if (collisionDetector && groupRef.current) {
+      collisionDetector.addCollisionObject(groupRef.current);
+    }
+    
+    // Set up shadows and materials for the 3D model
+    if (treeScene) {
+      treeScene.traverse((child) => {
+        if (child instanceof Mesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          if (child.material) {
+            child.material.metalness = 0.1;
+            child.material.roughness = 0.9;
+            child.material.needsUpdate = true;
+          }
         }
-    }, [collisionDetector]);
-    return (
-        <group ref={groupRef} position={position} scale={[size, size, size]}>
-            <mesh position={[0, 1.5, 0]} castShadow receiveShadow>
-                <cylinderGeometry args={[0.3, 0.4, 3, 8]} />
-                <meshStandardMaterial color="#8B4513" roughness={0.9} />
-            </mesh>
-            <mesh position={[0, 4, 0]} castShadow receiveShadow>
-                <sphereGeometry args={[1.5, 8, 6]} />
-                <meshStandardMaterial color="#228B22" roughness={0.8} />
-            </mesh>
-        </group>
-    );
+      });
+    }
+  }, [collisionDetector, treeScene]);
+
+  return (
+    <group ref={groupRef} position={position} scale={[size, size, size]}>
+      <primitive object={treeScene} />
+    </group>
+  );
 }
 
 // Forest component
 function Forest({ collisionDetector }) {
-    const trees = useMemo(() => {
-        return [
-            { position: [12, 0, 5], size: 1.2 },
-            { position: [-10, 0, 8], size: 1.1 },
-            { position: [8, 0, -6], size: 0.9 },
-            { position: [-7, 0, -8], size: 1.3 },
-            { position: [25, 0, 15], size: 1.4 },
-            { position: [-20, 0, 18], size: 1.1 },
-            { position: [18, 0, -12], size: 0.8 },
-            { position: [-15, 0, -14], size: 1.2 },
-            { position: [30, 0, -5], size: 1.0 },
-            { position: [-25, 0, 5], size: 1.3 },
-        ];
-    }, []);
-    return (
-        <group>
-            {trees.map((tree, index) => (
-                <Tree 
-                    key={index} 
-                    position={tree.position} 
-                    size={tree.size}
-                    collisionDetector={collisionDetector}
-                />
-            ))}
-        </group>
-    );
+  const trees = useMemo(() => {
+    return [
+      { position: [26, 0, -10], size: 1.2 },
+    
+      { position: [-40, 0, -20], size: 1.3 },
+   
+      { position: [-20, 0, -25], size: 1.0 },
+    ];
+  }, []);
+  return (
+    <group>
+      {trees.map((tree, index) => (
+        <Tree
+          key={index}
+          position={tree.position}
+          size={tree.size}
+          collisionDetector={collisionDetector}
+        />
+      ))}
+    </group>
+  );
 }
 
 // Particle System
@@ -553,10 +562,7 @@ function Ground({ collisionDetector, timeOfDay, timeMode }) {
                     metalness={0.0}
                 />
             </mesh>
-            <mesh position={[8, 0.5, 8]} castShadow receiveShadow>
-                <boxGeometry args={[1, 1, 1]} />
-                <meshStandardMaterial color="#8B4513" roughness={0.9} />
-            </mesh>
+            
         </group>
     );
 }
@@ -646,7 +652,7 @@ function FirstPersonControls({ speed = 7.5, collisionDetector, audioManager, onM
     const moveRight = useRef(false);
     const isJumping = useRef(false);
     const isCrouching = useRef(false);
-    const baseHeight = useRef(1.55);
+    const baseHeight = useRef(6.55);
     const currentHeight = useRef(baseHeight.current);
     const velocity = useRef(new Vector3());
     const direction = useRef(new Vector3());
@@ -720,7 +726,7 @@ function FirstPersonControls({ speed = 7.5, collisionDetector, audioManager, onM
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('pointerlockchange', handlePointerLockChange);
         gl.domElement.addEventListener('click', handleClick);
-        camera.position.set(0, currentHeight.current, 8);
+        camera.position.set(0, currentHeight.current, 28);
         camera.rotation.set(0, 0, 0);
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
@@ -817,7 +823,7 @@ function RedFortModel({ collisionDetector }) {
             });
         }
     }, [scene, collisionDetector]);
-   return <primitive object={scene} scale={2.8} position={[0, 0, 0]} />;
+   return <primitive object={scene} scale={12.8} position={[0, 0, 0]} />;
 }
 
 // Settings Panel (Copied from Sun Temple)
