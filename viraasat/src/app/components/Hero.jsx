@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import Prism from './Prism';
 
 // -----------------------------
 // Client-only CulturalParticles (fixed)
@@ -146,20 +145,7 @@ export default function Hero() {
       ref={containerRef}
       className="min-h-screen bg-background flex items-center justify-center relative overflow-hidden"
     >
-      {/* Prism Background */}
-      <div style={{ width: '100%', height: '900px', position: 'absolute', top: 0, left: 0, zIndex: 1 }}>
-        <Prism
-          animationType="rotate"
-          timeScale={1}
-          height={3.5}
-          baseWidth={5.5}
-          scale={2}
-          hueShift={0.06}
-          colorFrequency={1.8}
-          noise={0}
-          glow={1.2}
-        />
-      </div>
+      {/* Prism removed: decorative background omitted to simplify Hero */}
 
       {/* Animated background elements */}
       <CulturalParticles />
